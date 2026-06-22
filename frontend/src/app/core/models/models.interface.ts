@@ -68,18 +68,23 @@ export interface ParsedCV {
   institute?: string;
 }
 
+// Matches backend CandidateWithScoreResponse from GET /candidates/{jd_id}
 export interface CandidateMatch {
-  match_id: string;
   candidate_id: string;
-  jd_id: string;
-  overall_score: number;
-  skill_score: number;
-  experience_score: number;
-  education_score: number;
-  is_shortlisted: boolean;
-  parsed_cv?: ParsedCV;
-  recruiter_id: string;
+  name: string;              // candidate's actual name from CV
+  email: string;
+  phone?: string | null;
+  skills?: string | null;          // JSON string
+  experience_json?: string | null; // JSON string
+  education_json?: string | null;  // JSON string
   created_at: string;
+  // Scores are 0–1 fractions from backend — multiply by 100 for display
+  overall_score: number;
+  skill_score?: number;
+  experience_score?: number;
+  education_score?: number;
+  keyword_score?: number;
+  is_shortlisted: boolean;
 }
 
 export interface Interview {

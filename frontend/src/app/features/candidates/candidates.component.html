@@ -74,16 +74,16 @@
       <div class="candidate-card" *ngFor="let match of displayCandidates()">
         <!-- Left: Avatar -->
         <div class="candidate-card__avatar" [class]="'avatar--' + getScoreClass(match.overall_score)">
-          {{ getInitials(match.parsed_cv?.name || '?') }}
+          {{ getInitials(match.name) }}
         </div>
 
         <!-- Center: Info -->
         <div class="candidate-card__info">
           <div class="candidate-card__name-row">
-            <span class="candidate-card__name">{{ match.parsed_cv?.name || 'Unknown Candidate' }}</span>
-            <span class="pill pill-success" *ngIf="match.overall_score >= 80">✓ Shortlisted</span>
+            <span class="candidate-card__name">{{ match.name || 'Unknown Candidate' }}</span>
+            <span class="pill pill-success" *ngIf="match.overall_score >= 0.80">✓ Shortlisted</span>
           </div>
-          <span class="candidate-card__email">{{ match.parsed_cv?.email || '—' }}</span>
+          <span class="candidate-card__email">{{ match.email || '—' }}</span>
 
           <!-- Score Bar -->
           <div class="score-bar-row">
@@ -91,21 +91,21 @@
               <div
                 class="score-bar__fill"
                 [class]="getScoreClass(match.overall_score)"
-                [style.width.%]="match.overall_score"
+                [style.width.%]="toPercent(match.overall_score)"
               ></div>
             </div>
             <span class="score-label" [class]="'score--' + getScoreClass(match.overall_score)">
-              {{ match.overall_score | number:'1.0-0' }}%
+              {{ toPercent(match.overall_score) }}%
             </span>
           </div>
 
           <!-- Skills -->
-          <div class="candidate-card__skills" *ngIf="match.parsed_cv?.skills?.length">
-            <span class="pill pill-muted" *ngFor="let skill of (match.parsed_cv?.skills || []).slice(0, 5)">
+          <div class="candidate-card__skills" *ngIf="getSkills(match).length">
+            <span class="pill pill-muted" *ngFor="let skill of getSkills(match).slice(0, 5)">
               {{ skill }}
             </span>
-            <span class="pill pill-muted" *ngIf="(match.parsed_cv?.skills?.length || 0) > 5">
-              +{{ (match.parsed_cv?.skills?.length || 0) - 5 }} more
+            <span class="pill pill-muted" *ngIf="getSkills(match).length > 5">
+              +{{ getSkills(match).length - 5 }} more
             </span>
           </div>
 
@@ -113,19 +113,19 @@
           <div class="sub-scores">
             <div class="sub-score">
               <span class="sub-score__label">Skills</span>
-              <span class="sub-score__val">{{ match.skill_score | number:'1.0-0' }}%</span>
+              <span class="sub-score__val">{{ toPercent(match.skill_score) }}%</span>
             </div>
             <div class="sub-score">
               <span class="sub-score__label">Experience</span>
-              <span class="sub-score__val">{{ match.experience_score | number:'1.0-0' }}%</span>
+              <span class="sub-score__val">{{ toPercent(match.experience_score) }}%</span>
             </div>
             <div class="sub-score">
               <span class="sub-score__label">Education</span>
-              <span class="sub-score__val">{{ match.education_score | number:'1.0-0' }}%</span>
+              <span class="sub-score__val">{{ toPercent(match.education_score) }}%</span>
             </div>
             <div class="sub-score">
-              <span class="sub-score__label">Exp. (yrs)</span>
-              <span class="sub-score__val">{{ match.parsed_cv?.experience_years ?? '—' }}</span>
+              <span class="sub-score__label">Keywords</span>
+              <span class="sub-score__val">{{ toPercent(match.keyword_score) }}%</span>
             </div>
           </div>
         </div>

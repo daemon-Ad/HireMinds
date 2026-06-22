@@ -34,7 +34,8 @@ export class CandidatesComponent implements OnInit {
   slots: string[] = ['', '', ''];
 
   // Computed
-  shortlisted = computed(() => this.candidates().filter(c => c.overall_score >= 80));
+  // Scores from backend are 0-1 fractions; shortlist threshold = 0.80
+  shortlisted = computed(() => this.candidates().filter(c => c.overall_score >= 0.80));
   allCandidates = computed(() => this.candidates());
   displayCandidates = computed(() =>
     this.activeTab() === 'shortlisted' ? this.shortlisted() : this.allCandidates()
@@ -111,13 +112,25 @@ export class CandidatesComponent implements OnInit {
   }
 
   getScoreClass(score: number): string {
-    if (score >= 80) return 'high';
-    if (score >= 50) return 'mid';
+    const pct = score > 1 ? score : score * 100; // handle both fraction and %
+    if (pct >= 80) return 'high';
+    if (pct >= 50) return 'mid';
     return 'low';
   }
 
+  toPercent(score: number | undefined): number {
+    if (score === undefined || score === null) return 0;
+    // Backend returns 0-1 fractions
+    return Math.round((score > 1 ? score : score * 100));
+  }
+
+  getSkills(match: CandidateMatch): string[] {
+    if (!match.skills) return [];
+    try { return JSON.parse(match.skills); } catch { return []; }
+  }
+
   getInitials(name: string): string {
-    if (!name) return '?';
+    if (!name || name === 'Unknown') return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 }
