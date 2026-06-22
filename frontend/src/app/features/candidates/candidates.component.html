@@ -1,0 +1,173 @@
+<div class="candidates-page page-enter">
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a routerLink="/jd">Job Descriptions</a>
+    <span class="material-symbols-rounded">chevron_right</span>
+    <span>{{ jd()?.title || 'Loading…' }}</span>
+  </div>
+
+  <div class="page-header">
+    <div>
+      <h1>{{ jd()?.title || '&hellip;' }}</h1>
+      <p class="page-subtitle">AI-ranked candidates for this position</p>
+    </div>
+    <button class="btn btn-ghost" (click)="showUploadPanel.set(!showUploadPanel())">
+      <span class="material-symbols-rounded">upload_file</span>
+      Upload CV
+    </button>
+  </div>
+
+  <!-- Banners -->
+  <div class="banner banner--success" *ngIf="success()">
+    <span class="material-symbols-rounded">check_circle</span> {{ success() }}
+  </div>
+  <div class="banner banner--error" *ngIf="error()">
+    <span class="material-symbols-rounded">error</span> {{ error() }}
+  </div>
+
+  <!-- CV Upload Panel -->
+  <div class="upload-panel" *ngIf="showUploadPanel()">
+    <h3>Upload Candidate CV</h3>
+    <div
+      class="drop-zone"
+      [class.has-file]="cvFile"
+      (dragover)="$event.preventDefault()"
+      (drop)="onDrop($event)"
+      (click)="cvInput.click()"
+    >
+      <input #cvInput type="file" accept=".pdf" (change)="onFileSelect($event)" hidden />
+      <span class="material-symbols-rounded drop-zone__icon">picture_as_pdf</span>
+      <p *ngIf="!cvFile">Drag & drop a PDF resume or <span class="link">browse</span></p>
+      <p *ngIf="cvFile" class="drop-zone__filename">{{ cvFile.name }}</p>
+    </div>
+    <div class="upload-panel__actions">
+      <button class="btn btn-ghost" (click)="showUploadPanel.set(false); cvFile = null">Cancel</button>
+      <button class="btn btn-primary" (click)="uploadCV()" [disabled]="!cvFile || uploading()">
+        {{ uploading() ? 'Uploading & Matching…' : 'Upload & Match' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'shortlisted'" (click)="activeTab.set('shortlisted')">
+      <span class="material-symbols-rounded">verified</span>
+      Shortlisted
+      <span class="tab__badge tab__badge--green">{{ shortlisted().length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">
+      <span class="material-symbols-rounded">group</span>
+      All Candidates
+      <span class="tab__badge">{{ allCandidates().length }}</span>
+    </button>
+  </div>
+
+  <!-- Candidates List -->
+  <div *ngIf="!loading(); else skeletonCards">
+    <div class="empty-state" *ngIf="displayCandidates().length === 0">
+      <span class="material-symbols-rounded">person_search</span>
+      <p *ngIf="activeTab() === 'shortlisted'">No candidates above 80% match yet. Upload more CVs!</p>
+      <p *ngIf="activeTab() === 'all'">No candidates yet. Upload the first CV!</p>
+    </div>
+
+    <div class="candidate-list">
+      <div class="candidate-card" *ngFor="let match of displayCandidates()">
+        <!-- Left: Avatar -->
+        <div class="candidate-card__avatar" [class]="'avatar--' + getScoreClass(match.overall_score)">
+          {{ getInitials(match.parsed_cv?.name || '?') }}
+        </div>
+
+        <!-- Center: Info -->
+        <div class="candidate-card__info">
+          <div class="candidate-card__name-row">
+            <span class="candidate-card__name">{{ match.parsed_cv?.name || 'Unknown Candidate' }}</span>
+            <span class="pill pill-success" *ngIf="match.overall_score >= 80">✓ Shortlisted</span>
+          </div>
+          <span class="candidate-card__email">{{ match.parsed_cv?.email || '—' }}</span>
+
+          <!-- Score Bar -->
+          <div class="score-bar-row">
+            <div class="score-bar" style="flex: 1;">
+              <div
+                class="score-bar__fill"
+                [class]="getScoreClass(match.overall_score)"
+                [style.width.%]="match.overall_score"
+              ></div>
+            </div>
+            <span class="score-label" [class]="'score--' + getScoreClass(match.overall_score)">
+              {{ match.overall_score | number:'1.0-0' }}%
+            </span>
+          </div>
+
+          <!-- Skills -->
+          <div class="candidate-card__skills" *ngIf="match.parsed_cv?.skills?.length">
+            <span class="pill pill-muted" *ngFor="let skill of (match.parsed_cv?.skills || []).slice(0, 5)">
+              {{ skill }}
+            </span>
+            <span class="pill pill-muted" *ngIf="(match.parsed_cv?.skills?.length || 0) > 5">
+              +{{ (match.parsed_cv?.skills?.length || 0) - 5 }} more
+            </span>
+          </div>
+
+          <!-- Sub-scores -->
+          <div class="sub-scores">
+            <div class="sub-score">
+              <span class="sub-score__label">Skills</span>
+              <span class="sub-score__val">{{ match.skill_score | number:'1.0-0' }}%</span>
+            </div>
+            <div class="sub-score">
+              <span class="sub-score__label">Experience</span>
+              <span class="sub-score__val">{{ match.experience_score | number:'1.0-0' }}%</span>
+            </div>
+            <div class="sub-score">
+              <span class="sub-score__label">Education</span>
+              <span class="sub-score__val">{{ match.education_score | number:'1.0-0' }}%</span>
+            </div>
+            <div class="sub-score">
+              <span class="sub-score__label">Exp. (yrs)</span>
+              <span class="sub-score__val">{{ match.parsed_cv?.experience_years ?? '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #skeletonCards>
+    <div class="candidate-list">
+      <div class="candidate-card skeleton-card" *ngFor="let i of [1,2,3]"></div>
+    </div>
+  </ng-template>
+</div>
+
+<!-- ── Sticky Bottom Action Bar (Shortlisted tab only) ─────── -->
+<div class="sticky-bar" *ngIf="activeTab() === 'shortlisted' && shortlisted().length > 0 && !loading()">
+  <div class="sticky-bar__info">
+    <span class="material-symbols-rounded">verified</span>
+    <span>{{ shortlisted().length }} candidate{{ shortlisted().length !== 1 ? 's' : '' }} shortlisted (≥80% match)</span>
+  </div>
+
+  <!-- Slot Picker -->
+  <div class="slot-picker" *ngIf="showSlotPicker()">
+    <p class="slot-picker__label">Proposed interview slots (at least one required)</p>
+    <div class="slot-inputs">
+      <input *ngFor="let slot of slots; let i = index"
+        type="datetime-local"
+        [(ngModel)]="slots[i]"
+        class="slot-input"
+      />
+    </div>
+    <div class="slot-picker__actions">
+      <button class="btn btn-ghost" (click)="showSlotPicker.set(false)">Cancel</button>
+      <button class="btn btn-primary" (click)="sendInterviews()" [disabled]="sendingInterviews()">
+        <span class="material-symbols-rounded">send</span>
+        {{ sendingInterviews() ? 'Sending…' : 'Send Invitations' }}
+      </button>
+    </div>
+  </div>
+
+  <button class="btn btn-primary btn-lg" *ngIf="!showSlotPicker()" (click)="showSlotPicker.set(true)">
+    <span class="material-symbols-rounded">calendar_month</span>
+    Schedule Interviews for Shortlisted
+  </button>
+</div>

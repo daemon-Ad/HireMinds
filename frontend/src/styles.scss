@@ -1,0 +1,314 @@
+// ============================================================
+// Global SCSS — Design Tokens + Reset + Utilities
+// Supabase-inspired dark theme
+// ============================================================
+
+// ── Google Fonts are loaded in index.html ──────────────────
+
+// ── CSS Custom Properties (Design Tokens) ──────────────────
+:root {
+  // Brand
+  --primary:        #34b27b;
+  --primary-hover:  #2a9d6a;
+  --primary-glow:   rgba(52, 178, 123, 0.18);
+  --primary-subtle: rgba(52, 178, 123, 0.08);
+
+  // Backgrounds
+  --bg-base:      #11181c;
+  --bg-surface:   #1a2330;
+  --bg-elevated:  #243040;
+  --bg-overlay:   rgba(17, 24, 28, 0.85);
+
+  // Text
+  --text-primary:   #f8f9fa;
+  --text-secondary: #94a3b8;
+  --text-muted:     #475569;
+
+  // Borders
+  --border:        rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-hover:  rgba(255, 255, 255, 0.16);
+
+  // Semantic
+  --success: #34b27b;
+  --warning: #f59e0b;
+  --danger:  #ef4444;
+  --info:    #3b82f6;
+
+  // Score thresholds
+  --score-high: #34b27b;
+  --score-mid:  #f59e0b;
+  --score-low:  #ef4444;
+
+  // Sidebar
+  --sidebar-width: 240px;
+
+  // Typography
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  // Spacing
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  // Shadows
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg:  0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 20px var(--primary-glow);
+
+  // Transitions
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 400ms ease;
+}
+
+// ── Reset ───────────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// ── Typography ──────────────────────────────────────────────
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+
+  &:hover { color: var(--primary-hover); }
+}
+
+code, pre {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+// ── Scrollbar ───────────────────────────────────────────────
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: 99px;
+  &:hover { background: var(--text-muted); }
+}
+
+// ── Utility Classes ─────────────────────────────────────────
+.text-primary   { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-muted     { color: var(--text-muted) !important; }
+.text-success   { color: var(--success) !important; }
+.text-warning   { color: var(--warning) !important; }
+.text-danger    { color: var(--danger) !important; }
+
+.bg-surface   { background: var(--bg-surface); }
+.bg-elevated  { background: var(--bg-elevated); }
+
+.font-mono { font-family: var(--font-mono); }
+.font-500   { font-weight: 500; }
+.font-600   { font-weight: 600; }
+.font-700   { font-weight: 700; }
+
+// ── Card Base ───────────────────────────────────────────────
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+
+  &:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+// ── Buttons ─────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+
+  &-primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+
+    &:hover {
+      background: var(--primary-hover);
+      border-color: var(--primary-hover);
+      box-shadow: var(--shadow-glow);
+    }
+  }
+
+  &-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border);
+
+    &:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+    }
+  }
+
+  &-danger {
+    background: transparent;
+    color: var(--danger);
+    border-color: var(--danger);
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ── Pill / Badge ─────────────────────────────────────────────
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 500;
+
+  &-success { background: rgba(52, 178, 123, 0.15); color: var(--success); }
+  &-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+  &-danger  { background: rgba(239, 68, 68, 0.15);  color: var(--danger);  }
+  &-info    { background: rgba(59, 130, 246, 0.15); color: var(--info);    }
+  &-muted   { background: var(--bg-elevated); color: var(--text-muted);    }
+}
+
+// ── Score Bar ───────────────────────────────────────────────
+.score-bar {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &.high   { background: var(--score-high); }
+    &.mid    { background: var(--score-mid);  }
+    &.low    { background: var(--score-low);  }
+  }
+}
+
+// ── Form Fields ─────────────────────────────────────────────
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+// ── Angular Material Overrides ───────────────────────────────
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-xl) !important;
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-snack-bar-container {
+  &.success-snack { --mdc-snackbar-container-color: var(--success); }
+  &.error-snack   { --mdc-snackbar-container-color: var(--danger);  }
+}
+
+// ── Page Fade-in Animation ───────────────────────────────────
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeInUp var(--transition-slow) both;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-surface)  50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+// ── Divider ──────────────────────────────────────────────────
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 1.5rem 0;
+}

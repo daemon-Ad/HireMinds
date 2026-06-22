@@ -1,0 +1,140 @@
+.about-page {
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+// ── Nav ──────────────────────────────────────────────────────
+.about-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 4rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(17, 24, 28, 0.9);
+  backdrop-filter: blur(12px);
+
+  &__logo {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 1rem; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.03em;
+  }
+
+  &__links { display: flex; align-items: center; gap: 0.75rem; }
+}
+
+// ── Hero ─────────────────────────────────────────────────────
+.hero {
+  position: relative; overflow: hidden;
+  padding: 7rem 4rem 6rem;
+  text-align: center;
+
+  &__bg { position: absolute; inset: 0; pointer-events: none; }
+
+  &__content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+
+  &__badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.3rem 0.875rem; border-radius: 99px;
+    background: var(--primary-subtle); color: var(--primary);
+    font-size: 0.8125rem; font-weight: 500; border: 1px solid rgba(52,178,123,.2);
+    margin-bottom: 1.5rem;
+    .material-symbols-rounded { font-size: 0.9rem; }
+  }
+
+  &__title {
+    font-size: 3rem; font-weight: 800; letter-spacing: -0.04em;
+    line-height: 1.15; color: var(--text-primary); margin-bottom: 1.25rem;
+  }
+
+  &__subtitle {
+    font-size: 1.0625rem; color: var(--text-secondary); max-width: 540px;
+    margin: 0 auto 2rem; line-height: 1.7;
+  }
+
+  &__cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+}
+
+// Mesh
+.mesh {
+  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.2;
+  animation: float 8s ease-in-out infinite;
+  &--1 { width: 500px; height: 500px; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); top: -150px; left: -100px; }
+  &--2 { width: 400px; height: 400px; background: radial-gradient(circle, #3b82f6 0%, transparent 70%); bottom: -100px; right: -80px; animation-delay: -4s; }
+}
+
+@keyframes float {
+  0%,100% { transform: translate(0,0); }
+  50%      { transform: translate(30px,-20px); }
+}
+
+// ── Sections ─────────────────────────────────────────────────
+.how-it-works, .tech-stack {
+  padding: 5rem 4rem;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.section-label {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--primary); margin-bottom: 0.75rem;
+}
+
+h2 {
+  font-size: 1.875rem; font-weight: 700; letter-spacing: -0.03em;
+  margin-bottom: 3rem;
+}
+
+// ── Steps ────────────────────────────────────────────────────
+.steps-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;
+  max-width: 900px; margin: 0 auto;
+}
+
+.step-card {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.75rem 1.25rem;
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+  transition: all var(--transition-base);
+
+  &:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-glow); }
+
+  &__number {
+    font-size: 0.7rem; font-weight: 700; color: var(--primary);
+    background: var(--primary-subtle); width: 24px; height: 24px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    letter-spacing: 0.05em;
+  }
+
+  &__icon {
+    width: 48px; height: 48px; background: var(--bg-elevated);
+    border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center;
+    color: var(--primary);
+    .material-symbols-rounded { font-size: 1.4rem; }
+  }
+
+  h3 { font-size: 0.9375rem; margin: 0; }
+  p  { font-size: 0.8125rem; color: var(--text-muted); margin: 0; line-height: 1.6; }
+}
+
+// ── Tech Stack ───────────────────────────────────────────────
+.tech-grid {
+  display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; max-width: 600px; margin: 0 auto;
+}
+
+.tech-pill {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.5rem 1rem; border-radius: 99px;
+  background: var(--bg-surface); border: 1px solid;
+  font-size: 0.875rem; font-weight: 500; color: var(--text-secondary);
+}
+
+.tech-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+// ── Footer ───────────────────────────────────────────────────
+.about-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5rem 4rem; border-top: 1px solid var(--border);
+  font-size: 0.8125rem; color: var(--text-muted);
+}
+
+.btn-lg { padding: 0.7rem 1.5rem; font-size: 0.9375rem; }

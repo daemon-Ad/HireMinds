@@ -1,0 +1,123 @@
+<div class="auth-page">
+  <!-- Animated background mesh -->
+  <div class="auth-page__bg">
+    <div class="mesh mesh--1"></div>
+    <div class="mesh mesh--2"></div>
+    <div class="mesh mesh--3"></div>
+  </div>
+
+  <div class="auth-card">
+    <!-- Logo -->
+    <div class="auth-card__logo">
+      <span class="auth-card__logo-icon">⚡</span>
+      <span class="auth-card__logo-text">RecruitAI</span>
+    </div>
+
+    <h1 class="auth-card__title">
+      {{ activeTab() === 'login' ? 'Welcome back' : 'Create account' }}
+    </h1>
+    <p class="auth-card__subtitle">
+      {{ activeTab() === 'login'
+        ? 'Sign in to your recruitment dashboard'
+        : 'Start your AI-powered recruitment journey' }}
+    </p>
+
+    <!-- Tab Switcher -->
+    <div class="auth-tabs">
+      <button
+        class="auth-tab"
+        [class.active]="activeTab() === 'login'"
+        (click)="setTab('login')"
+      >Sign In</button>
+      <button
+        class="auth-tab"
+        [class.active]="activeTab() === 'register'"
+        (click)="setTab('register')"
+      >Register</button>
+    </div>
+
+    <!-- Error -->
+    <div class="auth-error" *ngIf="error()">
+      <span class="material-symbols-rounded">error</span>
+      {{ error() }}
+    </div>
+
+    <!-- Login Form -->
+    <form *ngIf="activeTab() === 'login'" (ngSubmit)="onLogin()" class="auth-form">
+      <div class="form-field">
+        <label for="login-email">Email address</label>
+        <input
+          id="login-email"
+          type="email"
+          [(ngModel)]="loginEmail"
+          name="loginEmail"
+          placeholder="you@company.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+      <div class="form-field">
+        <label for="login-password">Password</label>
+        <input
+          id="login-password"
+          type="password"
+          [(ngModel)]="loginPassword"
+          name="loginPassword"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+      <button type="submit" class="auth-submit" [disabled]="loading()">
+        <span *ngIf="!loading()">Sign in</span>
+        <span *ngIf="loading()" class="loading-dots">Signing in</span>
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form *ngIf="activeTab() === 'register'" (ngSubmit)="onRegister()" class="auth-form">
+      <div class="form-field">
+        <label for="reg-username">Username</label>
+        <input
+          id="reg-username"
+          type="text"
+          [(ngModel)]="regUsername"
+          name="regUsername"
+          placeholder="yourname"
+          required
+        />
+      </div>
+      <div class="form-field">
+        <label for="reg-email">Email address</label>
+        <input
+          id="reg-email"
+          type="email"
+          [(ngModel)]="regEmail"
+          name="regEmail"
+          placeholder="you@company.com"
+          required
+        />
+      </div>
+      <div class="form-field">
+        <label for="reg-password">Password</label>
+        <input
+          id="reg-password"
+          type="password"
+          [(ngModel)]="regPassword"
+          name="regPassword"
+          placeholder="••••••••"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+      <button type="submit" class="auth-submit" [disabled]="loading()">
+        <span *ngIf="!loading()">Create account</span>
+        <span *ngIf="loading()" class="loading-dots">Creating</span>
+      </button>
+    </form>
+
+    <p class="auth-card__footer">
+      <a routerLink="/about">Learn about RecruitAI →</a>
+    </p>
+  </div>
+</div>

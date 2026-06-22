@@ -1,0 +1,107 @@
+// Core TypeScript interfaces matching backend schemas exactly
+
+export interface Recruiter {
+  recruiter_id: string;
+  username: string;
+  email: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  username: string; // email passed as username per OAuth2 spec
+  password: string;
+}
+
+// Matches backend JDResponse exactly (flat fields, not nested)
+export interface JobDescription {
+  jd_id: string;
+  title: string;
+  raw_text: string;
+  required_skills: string | null;       // JSON string from backend
+  min_experience_years: number | null;
+  required_education: string | null;
+  responsibilities: string | null;      // JSON string from backend
+  recruiter_id: string;
+  created_at: string;
+}
+
+// Helper to parse skills JSON string safely
+export function parseSkills(skillsJson: string | null): string[] {
+  if (!skillsJson) return [];
+  try { return JSON.parse(skillsJson); } catch { return []; }
+}
+
+export interface JDListResponse {
+  job_descriptions: JobDescription[];
+  total: number;
+}
+
+export interface JDCreateRequest {
+  title: string;
+  raw_text: string;
+}
+
+export interface Candidate {
+  candidate_id: string;
+  raw_cv_text: string;
+  parsed_cv?: ParsedCV;
+  recruiter_id: string;
+  created_at: string;
+}
+
+export interface ParsedCV {
+  name: string;
+  email: string;
+  skills: string[];
+  experience_years: number;
+  education: string;
+  institute?: string;
+}
+
+export interface CandidateMatch {
+  match_id: string;
+  candidate_id: string;
+  jd_id: string;
+  overall_score: number;
+  skill_score: number;
+  experience_score: number;
+  education_score: number;
+  is_shortlisted: boolean;
+  parsed_cv?: ParsedCV;
+  recruiter_id: string;
+  created_at: string;
+}
+
+export interface Interview {
+  interview_id: string;
+  candidate_id: string;
+  jd_id: string;
+  recruiter_id: string;
+  proposed_slots: string[];
+  status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+  email_content?: string;
+  created_at: string;
+  candidate_name?: string;
+}
+
+export interface InterviewTriggerRequest {
+  jd_id: string;
+  proposed_slots: string[];
+}
+
+export interface DashboardStats {
+  total_jds: number;
+  total_candidates: number;
+  shortlisted: number;
+  interviews_sent: number;
+}

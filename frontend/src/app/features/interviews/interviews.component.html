@@ -1,0 +1,51 @@
+<div class="interviews-page page-enter">
+  <div class="page-header">
+    <div>
+      <h1>Interviews</h1>
+      <p class="page-subtitle">All sent interview invitations and their status</p>
+    </div>
+  </div>
+  <p class="hint">
+    <span class="material-symbols-rounded">info</span>
+    To send interviews, navigate to a Job Description and use the <strong>Schedule Interviews</strong> button.
+  </p>
+
+  <div *ngIf="!loading(); else skeleton">
+    <div class="empty-state" *ngIf="interviews().length === 0">
+      <span class="material-symbols-rounded">calendar_month</span>
+      <p>No interviews sent yet. Shortlist candidates from a Job Description first.</p>
+    </div>
+
+    <div class="interview-list" *ngIf="interviews().length > 0">
+      <div class="interview-card" *ngFor="let interview of interviews()">
+        <div class="interview-card__status-icon" [class]="'icon--' + getStatusClass(interview.status)">
+          <span class="material-symbols-rounded">{{ getStatusIcon(interview.status) }}</span>
+        </div>
+
+        <div class="interview-card__info">
+          <div class="interview-card__name-row">
+            <span class="interview-card__name">{{ interview.candidate_name || interview.candidate_id }}</span>
+            <span class="pill" [class]="'pill-' + getStatusClass(interview.status)">
+              {{ interview.status }}
+            </span>
+          </div>
+          <span class="interview-card__meta">
+            Sent {{ formatDate(interview.created_at) }}
+          </span>
+          <div class="interview-card__slots" *ngIf="interview.proposed_slots?.length">
+            <span class="interview-card__slots-label">Proposed slots:</span>
+            <span class="pill pill-muted" *ngFor="let slot of interview.proposed_slots">
+              {{ slot }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #skeleton>
+    <div class="interview-list">
+      <div class="interview-card skeleton-card" *ngFor="let i of [1,2,3]"></div>
+    </div>
+  </ng-template>
+</div>
