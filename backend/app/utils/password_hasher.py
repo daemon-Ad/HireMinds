@@ -1,7 +1,4 @@
-from passlib.context import CryptContext  # type: ignore
-
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+import bcrypt
 
 def hash_password(plain: str) -> str:
     """
@@ -13,7 +10,11 @@ def hash_password(plain: str) -> str:
     Returns:
         A bcrypt hash string safe to store in the database.
     """
-    return _pwd_context.hash(plain)
+    # bcrypt requires bytes
+    pwd_bytes = plain.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed_bytes = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed_bytes.decode('utf-8')
 
 
 def verify_password(plain: str, hashed: str) -> bool:
@@ -27,4 +28,6 @@ def verify_password(plain: str, hashed: str) -> bool:
     Returns:
         True if the password matches the hash, False otherwise.
     """
-    return _pwd_context.verify(plain, hashed)
+    pwd_bytes = plain.encode('utf-8')
+    hashed_bytes = hashed.encode('utf-8')
+    return bcrypt.checkpw(pwd_bytes, hashed_bytes)
