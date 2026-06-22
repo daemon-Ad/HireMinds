@@ -24,7 +24,8 @@ export class DashboardComponent implements OnInit {
     return this.interviews().length;
   }
   get interviewsSent() { return this.interviews().length; }
-  get recentJDs() { return this.jds().slice(0, 5); }
+  get recentJDs() { return this.jds().slice(0, 3); }
+  get recentInterviews() { return this.interviews().slice(0, 3); }
 
   constructor(
     private jdService: JdService,

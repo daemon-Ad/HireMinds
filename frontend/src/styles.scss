@@ -36,9 +36,10 @@
   --info:    #3b82f6;
 
   // Score thresholds
-  --score-high: #34b27b;
-  --score-mid:  #f59e0b;
-  --score-low:  #ef4444;
+  --score-high: #34b27b; // green
+  --score-good: #3b82f6; // blue
+  --score-mid:  #f59e0b; // yellow
+  --score-low:  #ef4444; // red
 
   // Sidebar
   --sidebar-width: 240px;
@@ -75,7 +76,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 18px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;

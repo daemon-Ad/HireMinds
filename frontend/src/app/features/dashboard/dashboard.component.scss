@@ -86,6 +86,13 @@
   animation: shimmer 1.5s infinite;
 }
 
+// ── Dashboard Split ──────────────────────────────────────────
+.dashboard-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
 // ── Section ──────────────────────────────────────────────────
 .section {
   background: var(--bg-surface);

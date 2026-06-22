@@ -16,10 +16,13 @@ interface NavItem {
   template: `
     <div class="shell">
       <!-- Sidebar -->
-      <aside class="sidebar">
+      <aside class="sidebar" [class.collapsed]="isSidebarCollapsed()">
         <div class="sidebar__logo">
-          <span class="sidebar__logo-icon">⚡</span>
-          <span class="sidebar__logo-text">RecruitAI</span>
+          <button class="sidebar__toggle" (click)="isSidebarCollapsed.set(!isSidebarCollapsed())">
+            <span class="material-symbols-rounded">menu</span>
+          </button>
+          <span class="sidebar__logo-icon" *ngIf="!isSidebarCollapsed()">⚡</span>
+          <span class="sidebar__logo-text" *ngIf="!isSidebarCollapsed()">RecruitAI</span>
         </div>
 
         <nav class="sidebar__nav">
@@ -29,19 +32,19 @@ interface NavItem {
             routerLinkActive="active"
             class="sidebar__nav-item"
           >
-            <span class="material-symbols-rounded">{{ item.icon }}</span>
-            <span>{{ item.label }}</span>
+            <span class="material-symbols-rounded" [title]="isSidebarCollapsed() ? item.label : ''">{{ item.icon }}</span>
+            <span *ngIf="!isSidebarCollapsed()">{{ item.label }}</span>
           </a>
         </nav>
 
         <div class="sidebar__footer">
-          <a routerLink="/about" routerLinkActive="active" class="sidebar__nav-item">
+          <a routerLink="/about" routerLinkActive="active" class="sidebar__nav-item" [title]="isSidebarCollapsed() ? 'About' : ''">
             <span class="material-symbols-rounded">info</span>
-            <span>About</span>
+            <span *ngIf="!isSidebarCollapsed()">About</span>
           </a>
-          <button class="sidebar__logout" (click)="auth.logout()">
+          <button class="sidebar__logout" (click)="auth.logout()" [title]="isSidebarCollapsed() ? 'Sign out' : ''">
             <span class="material-symbols-rounded">logout</span>
-            <span>Sign out</span>
+            <span *ngIf="!isSidebarCollapsed()">Sign out</span>
           </button>
         </div>
       </aside>
@@ -55,6 +58,8 @@ interface NavItem {
   styleUrl: './app-shell.component.scss'
 })
 export class AppShellComponent {
+  isSidebarCollapsed = signal(false);
+
   navItems: NavItem[] = [
     { path: '/dashboard',   label: 'Dashboard',         icon: 'dashboard' },
     { path: '/jd',          label: 'Job Descriptions',  icon: 'description' },

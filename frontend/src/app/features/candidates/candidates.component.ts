@@ -114,7 +114,8 @@ export class CandidatesComponent implements OnInit {
   getScoreClass(score: number): string {
     const pct = score > 1 ? score : score * 100; // handle both fraction and %
     if (pct >= 80) return 'high';
-    if (pct >= 50) return 'mid';
+    if (pct >= 60) return 'good';
+    if (pct >= 45) return 'mid';
     return 'low';
   }
 
