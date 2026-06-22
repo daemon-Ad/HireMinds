@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse
+from app.schemas.auth import RegisterRequest, TokenResponse
 from app.db.repositories import recruiter_repo
 from app.utils import password_hasher, jwt_handler
 
@@ -26,15 +26,15 @@ def register(db: Session, request: RegisterRequest) -> TokenResponse:
     return TokenResponse(access_token=access_token, token_type="bearer")
 
 
-def login(db: Session, request: LoginRequest) -> TokenResponse:
-    recruiter = recruiter_repo.get_by_email(db=db, email=request.email)
+def login(db: Session, email: str, password: str) -> TokenResponse:
+    recruiter = recruiter_repo.get_by_email(db=db, email=email)
     if not recruiter:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",
         )
 
-    if not password_hasher.verify_password(request.password, recruiter.password_hash):
+    if not password_hasher.verify_password(password, recruiter.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",

@@ -25,9 +25,9 @@ _VOCAB_REGEXES = {
 def match_skills(text: str) -> List[str]:
     skills_text_lower = text.lower()
     matched = []
-    # For each vocab term, check if term appears as a word/phrase
+    # For each vocab term, check if it appears as a whole word/phrase in the text
     for term in SKILLS_VOCABULARY:
         pattern = _VOCAB_REGEXES[term]
         if pattern.search(skills_text_lower):
-            matched.append(_vocab_map[term])
-    return [match.lower() for match in matched]
+            matched.append(_vocab_map[term])  # _vocab_map[term] preserves original casing
+    return matched

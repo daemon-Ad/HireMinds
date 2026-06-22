@@ -57,9 +57,9 @@ def list_jds(db: Session, recruiter_id: UUID) -> JDListResponse:
     )
 
 
-def get_jd(db: Session, jd_id: UUID) -> JDResponse:
+def get_jd(db: Session, jd_id: UUID, recruiter_id: UUID) -> JDResponse:
     jd = jd_repo.get_by_id(db=db, jd_id=jd_id)
-    if not jd:
+    if not jd or jd.recruiter_id != recruiter_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job description {jd_id} not found.",

@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
 import jwt
@@ -9,11 +9,13 @@ from app.db.repositories import recruiter_repo
 from app.db.database import get_db
 from app.models.recruiter import Recruiter
 
-_bearer = HTTPBearer()
+# Must point to the login endpoint so Swagger's Authorize button
+# knows where to POST credentials and retrieve the Bearer token.
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_current_recruiter(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+    token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> Recruiter:
     """
@@ -25,8 +27,6 @@ def get_current_recruiter(
 
     Inject into protected routes with: Depends(get_current_recruiter)
     """
-    token = credentials.credentials
-
     try:
         recruiter_id = jwt_handler.decode_token(token)
     except jwt.ExpiredSignatureError:
