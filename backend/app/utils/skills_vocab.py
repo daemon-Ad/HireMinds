@@ -30,4 +30,4 @@ def match_skills(text: str) -> List[str]:
         pattern = _VOCAB_REGEXES[term]
         if pattern.search(skills_text_lower):
             matched.append(_vocab_map[term])
-    return [matched.lower() for match in matched]
+    return [match.lower() for match in matched]
