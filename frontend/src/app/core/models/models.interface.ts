@@ -89,14 +89,15 @@ export interface CandidateMatch {
 
 export interface Interview {
   interview_id: string;
-  candidate_id: string;
-  jd_id: string;
+  match_id: string;
   recruiter_id: string;
-  proposed_slots: string[];
-  status: 'PENDING' | 'ACCEPTED' | 'DECLINED';
-  email_content?: string;
-  created_at: string;
+  proposed_slots: string | null;
+  status: string;
+  email_subject?: string;
+  email_body?: string;
+  sent_at: string;
   candidate_name?: string;
+  jd_title?: string;
 }
 
 export interface InterviewTriggerRequest {

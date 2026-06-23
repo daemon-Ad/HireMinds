@@ -18,4 +18,8 @@ export class InterviewService {
   listInterviews(): Observable<Interview[]> {
     return this.http.get<Interview[]>(`${this.API}/`);
   }
+
+  updateInterview(interviewId: string, action: string, newSlots: string[]): Observable<Interview> {
+    return this.http.put<Interview>(`${this.API}/${interviewId}`, { action, new_slots: newSlots });
+  }
 }

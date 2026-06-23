@@ -32,7 +32,11 @@ export class CandidatesComponent implements OnInit {
   cvFile: File | null = null;
 
   // Interview slots
-  slots: string[] = ['', '', ''];
+  slots: { date: string, time: string }[] = [
+    { date: '', time: '' },
+    { date: '', time: '' },
+    { date: '', time: '' }
+  ];
 
   // Computed
   // Scores from backend are 0-1 fractions; shortlist threshold = 0.80
@@ -100,8 +104,11 @@ export class CandidatesComponent implements OnInit {
   }
 
   sendInterviews() {
-    const validSlots = this.slots.filter(s => s.trim());
-    if (validSlots.length === 0) { this.error.set('Add at least one proposed interview slot.'); return; }
+    const validSlots = this.slots
+      .filter(s => s.date && s.time)
+      .map(s => `${s.date} ${s.time}`);
+      
+    if (validSlots.length === 0) { this.error.set('Add at least one complete proposed interview slot (Date + Time).'); return; }
     this.sendingInterviews.set(true);
     
     const candidateId = this.selectedCandidateId() || undefined;

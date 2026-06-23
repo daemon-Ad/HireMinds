@@ -222,3 +222,113 @@
   // Date picker color fix for dark mode
   color-scheme: dark;
 }
+
+/* ── Modal & Right Panel ─────── */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-panel {
+  background: var(--bg-surface);
+  height: 100%;
+  width: 400px;
+  max-width: 100%;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 1px solid var(--border);
+
+  &__header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+  }
+
+  &__body {
+    padding: 1.5rem;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  &__footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    background: var(--bg-elevated);
+  }
+}
+
+.slot-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.modern-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 0.75rem;
+  flex: 1;
+  transition: all var(--transition-fast);
+  color-scheme: dark;
+
+  .material-symbols-rounded {
+    color: var(--text-muted);
+    font-size: 1.125rem;
+    margin-right: 0.5rem;
+  }
+
+  &:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    .material-symbols-rounded {
+      color: var(--primary);
+    }
+  }
+
+  input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 0.65rem 0;
+    font-size: 0.9375rem;
+    outline: none;
+    cursor: pointer;
+
+    &::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      &:hover { opacity: 1; }
+    }
+  }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}

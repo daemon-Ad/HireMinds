@@ -154,17 +154,48 @@
     <span>Scheduling interview for selected candidate</span>
   </div>
 
-  <!-- Slot Picker -->
-  <div class="slot-picker" *ngIf="showSlotPicker()">
-    <p class="slot-picker__label">Proposed interview slots (at least one required)</p>
-    <div class="slot-inputs">
-      <input *ngFor="let slot of slots; let i = index"
-        type="datetime-local"
-        [(ngModel)]="slots[i]"
-        class="slot-input"
-      />
+  <button class="btn btn-primary btn-lg" *ngIf="!selectedCandidateId()" (click)="openSlotPicker()">
+    <span class="material-symbols-rounded">calendar_month</span>
+    Schedule Interviews for Shortlisted
+  </button>
+</div>
+
+<!-- ── Schedule Interview Modal (Right Panel) ─────── -->
+<div class="modal-backdrop" *ngIf="showSlotPicker()" (click)="showSlotPicker.set(false); selectedCandidateId.set(null)">
+  <div class="modal-panel right-panel" (click)="$event.stopPropagation()">
+    <div class="modal-panel__header">
+      <h3>Schedule Interview</h3>
+      <button class="btn btn-icon" (click)="showSlotPicker.set(false); selectedCandidateId.set(null)">
+        <span class="material-symbols-rounded">close</span>
+      </button>
     </div>
-    <div class="slot-picker__actions">
+    
+    <div class="modal-panel__body">
+      <p class="text-muted mb-4" *ngIf="selectedCandidateId()">Scheduling interview for the selected candidate.</p>
+      <p class="text-muted mb-4" *ngIf="!selectedCandidateId()">Scheduling interviews for all shortlisted candidates (≥80% match).</p>
+
+      <p class="form-label">Proposed interview slots (at least one required)</p>
+      <div class="slot-inputs">
+        <div class="slot-row" *ngFor="let slot of slots; let i = index">
+          <div class="modern-input-wrapper">
+            <span class="material-symbols-rounded">event</span>
+            <input type="date" [(ngModel)]="slot.date" class="form-control" />
+          </div>
+          <div class="modern-input-wrapper">
+            <span class="material-symbols-rounded">schedule</span>
+            <input type="time" [(ngModel)]="slot.time" class="form-control" />
+          </div>
+          <button class="btn btn-icon text-danger ml-2" (click)="slots.splice(i, 1)" *ngIf="slots.length > 1">
+            <span class="material-symbols-rounded">delete</span>
+          </button>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm mt-2" (click)="slots.push({date: '', time: ''})">
+        + Add another slot
+      </button>
+    </div>
+    
+    <div class="modal-panel__footer">
       <button class="btn btn-ghost" (click)="showSlotPicker.set(false); selectedCandidateId.set(null)">Cancel</button>
       <button class="btn btn-primary" (click)="sendInterviews()" [disabled]="sendingInterviews()">
         <span class="material-symbols-rounded">send</span>
@@ -172,9 +203,4 @@
       </button>
     </div>
   </div>
-
-  <button class="btn btn-primary btn-lg" *ngIf="!showSlotPicker() && !selectedCandidateId()" (click)="openSlotPicker()">
-    <span class="material-symbols-rounded">calendar_month</span>
-    Schedule Interviews for Shortlisted
-  </button>
 </div>
