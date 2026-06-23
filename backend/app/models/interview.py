@@ -11,6 +11,10 @@ class InterviewStatus(str, enum.Enum):
     PENDING = "pending"
     SENT = "sent"
     FAILED = "failed"
+    CANCELLED = "cancelled"
+    POSTPONED = "postponed"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
 
 
 class Interview(Base, TimestampMixin):
@@ -42,3 +46,11 @@ class Interview(Base, TimestampMixin):
 
     # Relationships
     match = relationship("CandidateJDMatch", back_populates="interview")
+
+    @property
+    def candidate_name(self) -> str:
+        return self.match.candidate.name if self.match and self.match.candidate else "Unknown"
+
+    @property
+    def jd_title(self) -> str:
+        return self.match.job_description.title if self.match and self.match.job_description else "Unknown"

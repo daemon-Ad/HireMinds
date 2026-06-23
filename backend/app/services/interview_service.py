@@ -83,3 +83,45 @@ def list_interviews(db: Session, recruiter_id: UUID) -> List[InterviewResponse]:
     """Return all interviews sent by this recruiter, newest first."""
     interviews = interview_repo.get_by_recruiter_id(db=db, recruiter_id=recruiter_id)
     return [InterviewResponse.model_validate(i) for i in interviews]
+
+def update_interview(
+    db: Session,
+    interview_id: UUID,
+    recruiter_id: UUID,
+    action: str,
+    new_slots: List[str]
+) -> InterviewResponse:
+    interview = interview_repo.get_by_id(db=db, interview_id=interview_id)
+    if not interview or interview.recruiter_id != recruiter_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Interview {interview_id} not found."
+        )
+
+    match = interview.match
+    candidate = match.candidate
+    jd = match.job_description
+
+    scheduler = InterviewSchedulerAgent()
+    result = scheduler.update_interview(
+        candidate_name=candidate.name,
+        jd_title=jd.title,
+        recruiter_name=match.recruiter.username,
+        action=action,
+        proposed_slots=new_slots
+    )
+
+    new_status = "cancelled" if action == "cancel" else "postponed"
+
+    interview = interview_repo.create_or_update(
+        db=db,
+        match_id=match.match_id,
+        recruiter_id=recruiter_id,
+        email_subject=result.email_subject,
+        email_body=result.email_body,
+        proposed_slots=json.dumps(result.proposed_slots),
+        status=new_status,
+        sent_at=datetime.now(timezone.utc),
+    )
+
+    return InterviewResponse.model_validate(interview)
