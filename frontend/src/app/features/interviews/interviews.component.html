@@ -129,18 +129,14 @@
             <div class="slot-row" *ngFor="let slot of slots; let i = index">
               <div class="modern-input-wrapper">
                 <span class="material-symbols-rounded">event</span>
-                <input type="date" [(ngModel)]="slot.date" class="form-control" />
-              </div>
-              <div class="modern-input-wrapper">
-                <span class="material-symbols-rounded">schedule</span>
-                <input type="time" [(ngModel)]="slot.time" class="form-control" />
+                <input type="text" appDatetimePicker [(ngModel)]="slot.datetime" class="form-control" placeholder="Select Date & Time..." />
               </div>
               <button class="btn btn-icon text-danger ml-2" (click)="slots.splice(i, 1)" *ngIf="slots.length > 1">
                 <span class="material-symbols-rounded">delete</span>
               </button>
             </div>
           </div>
-          <button class="btn btn-ghost btn-sm mt-2" (click)="slots.push({date: '', time: ''})">
+          <button class="btn btn-ghost btn-sm mt-2" (click)="slots.push({datetime: ''})">
             + Add another slot
           </button>
         </div>

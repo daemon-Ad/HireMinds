@@ -24,6 +24,7 @@ def parse_llm_response(raw: str) -> Optional[Dict[str, Any]]:
         A parsed dict if successful, or None if parsing fails.
     """
     cleaned = _strip_code_fences(raw)
+    cleaned = _escape_unescaped_newlines(cleaned)
     try:
         result = json.loads(cleaned)
         if isinstance(result, dict):
@@ -69,3 +70,36 @@ def _strip_code_fences(text: str) -> str:
     text = _FENCE_CLOSE.sub("", text)
 
     return text.strip()
+
+
+def _escape_unescaped_newlines(text: str) -> str:
+    """
+    Escapes literal newlines and control characters inside JSON strings.
+    The LLM often writes literal newlines inside 'email_body' strings, which breaks json.loads.
+    """
+    in_string = False
+    escaped = False
+    result = []
+    for char in text:
+        if in_string:
+            if char == '"' and not escaped:
+                in_string = False
+            elif char == '\\' and not escaped:
+                escaped = True
+            else:
+                escaped = False
+            
+            if char == '\n':
+                result.append('\\n')
+                continue
+            elif char == '\r':
+                result.append('\\r')
+                continue
+            elif char == '\t':
+                result.append('\\t')
+                continue
+        else:
+            if char == '"':
+                in_string = True
+        result.append(char)
+    return "".join(result)

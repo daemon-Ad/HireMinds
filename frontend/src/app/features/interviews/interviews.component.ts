@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InterviewService } from './interview.service';
 import { Interview } from '../../core/models/models.interface';
+import { DatetimePickerDirective } from '../../shared/directives/datetime-picker.directive';
 
 @Component({
   selector: 'app-interviews',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DatetimePickerDirective],
   templateUrl: './interviews.component.html',
   styleUrl: './interviews.component.scss'
 })
@@ -21,7 +22,7 @@ export class InterviewsComponent implements OnInit {
   modalAction = signal<'cancel' | 'postpone'>('cancel');
   selectedInterview = signal<Interview | null>(null);
   
-  slots: { date: string, time: string }[] = [{ date: '', time: '' }];
+  slots: { datetime: string }[] = [{ datetime: '' }];
   updating = signal(false);
   error = signal('');
   success = signal('');
@@ -71,7 +72,7 @@ export class InterviewsComponent implements OnInit {
   openModal(interview: Interview, action: 'cancel' | 'postpone') {
     this.selectedInterview.set(interview);
     this.modalAction.set(action);
-    this.slots = [{ date: '', time: '' }];
+    this.slots = [{ datetime: '' }];
     this.error.set('');
     this.showModal.set(true);
   }
@@ -87,7 +88,7 @@ export class InterviewsComponent implements OnInit {
 
     let validSlots: string[] = [];
     if (this.modalAction() === 'postpone') {
-      validSlots = this.slots.filter(s => s.date && s.time).map(s => `${s.date} ${s.time}`);
+      validSlots = this.slots.filter(s => s.datetime).map(s => s.datetime);
       if (validSlots.length === 0) {
         this.error.set('Please provide at least one new time slot.');
         return;

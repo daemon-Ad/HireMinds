@@ -1,16 +1,17 @@
 import { Component, OnInit, signal, computed, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RouterLink, ActivatedRoute, RouterModule } from '@angular/router';
 import { CandidateService } from './candidate.service';
 import { InterviewService } from '../interviews/interview.service';
 import { JdService } from '../job-descriptions/jd.service';
 import { CandidateMatch, JobDescription } from '../../core/models/models.interface';
+import { DatetimePickerDirective } from '../../shared/directives/datetime-picker.directive';
 
 @Component({
   selector: 'app-candidates',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
   templateUrl: './candidates.component.html',
   styleUrl: './candidates.component.scss'
 })
@@ -32,10 +33,10 @@ export class CandidatesComponent implements OnInit {
   cvFile: File | null = null;
 
   // Interview slots
-  slots: { date: string, time: string }[] = [
-    { date: '', time: '' },
-    { date: '', time: '' },
-    { date: '', time: '' }
+  slots: { datetime: string }[] = [
+    { datetime: '' },
+    { datetime: '' },
+    { datetime: '' }
   ];
 
   // Computed
@@ -104,9 +105,7 @@ export class CandidatesComponent implements OnInit {
   }
 
   sendInterviews() {
-    const validSlots = this.slots
-      .filter(s => s.date && s.time)
-      .map(s => `${s.date} ${s.time}`);
+    const validSlots = this.slots.filter(s => s.datetime).map(s => s.datetime);
       
     if (validSlots.length === 0) { this.error.set('Add at least one complete proposed interview slot (Date + Time).'); return; }
     this.sendingInterviews.set(true);
