@@ -26,6 +26,7 @@ export class CandidatesComponent implements OnInit {
   success = signal('');
   showUploadPanel = signal(false);
   showSlotPicker = signal(false);
+  selectedCandidateId = signal<string | null>(null);
 
   // CV Upload
   cvFile: File | null = null;
@@ -93,14 +94,22 @@ export class CandidatesComponent implements OnInit {
     });
   }
 
+  openSlotPicker(candidateId?: string) {
+    this.selectedCandidateId.set(candidateId || null);
+    this.showSlotPicker.set(true);
+  }
+
   sendInterviews() {
     const validSlots = this.slots.filter(s => s.trim());
     if (validSlots.length === 0) { this.error.set('Add at least one proposed interview slot.'); return; }
     this.sendingInterviews.set(true);
-    this.interviewService.sendInterviews(this.jdId(), validSlots).subscribe({
+    
+    const candidateId = this.selectedCandidateId() || undefined;
+    this.interviewService.sendInterviews(this.jdId(), validSlots, candidateId).subscribe({
       next: (interviews) => {
         this.success.set(`${interviews.length} interview invitation(s) sent successfully!`);
         this.showSlotPicker.set(false);
+        this.selectedCandidateId.set(null);
         this.sendingInterviews.set(false);
         setTimeout(() => this.success.set(''), 5000);
       },

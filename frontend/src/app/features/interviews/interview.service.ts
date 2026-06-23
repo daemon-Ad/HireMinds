@@ -9,8 +9,9 @@ export class InterviewService {
 
   constructor(private http: HttpClient) {}
 
-  sendInterviews(jdId: string, slots: string[]): Observable<Interview[]> {
+  sendInterviews(jdId: string, slots: string[], candidateId?: string): Observable<Interview[]> {
     const body: InterviewTriggerRequest = { jd_id: jdId, proposed_slots: slots };
+    if (candidateId) body.candidate_id = candidateId;
     return this.http.post<Interview[]>(`${this.API}/send`, body);
   }
 

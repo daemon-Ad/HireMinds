@@ -82,6 +82,9 @@
           <div class="candidate-card__name-row">
             <span class="candidate-card__name">{{ match.name || 'Unknown Candidate' }}</span>
             <span class="pill pill-success" *ngIf="match.overall_score >= 0.80">✓ Shortlisted</span>
+            <button class="btn btn-ghost" style="margin-left: auto; font-size: 0.8rem; padding: 0.25rem 0.6rem;" (click)="openSlotPicker(match.candidate_id)">
+              <span class="material-symbols-rounded" style="font-size: 1rem;">calendar_month</span> Schedule
+            </button>
           </div>
           <span class="candidate-card__email">{{ match.email || '—' }}</span>
 
@@ -140,11 +143,15 @@
   </ng-template>
 </div>
 
-<!-- ── Sticky Bottom Action Bar (Shortlisted tab only) ─────── -->
-<div class="sticky-bar" *ngIf="activeTab() === 'shortlisted' && shortlisted().length > 0 && !loading()">
-  <div class="sticky-bar__info">
+<!-- ── Sticky Bottom Action Bar ─────── -->
+<div class="sticky-bar" *ngIf="(activeTab() === 'shortlisted' && shortlisted().length > 0 && !loading()) || showSlotPicker()">
+  <div class="sticky-bar__info" *ngIf="!selectedCandidateId()">
     <span class="material-symbols-rounded">verified</span>
     <span>{{ shortlisted().length }} candidate{{ shortlisted().length !== 1 ? 's' : '' }} shortlisted (≥80% match)</span>
+  </div>
+  <div class="sticky-bar__info" *ngIf="selectedCandidateId()">
+    <span class="material-symbols-rounded">person</span>
+    <span>Scheduling interview for selected candidate</span>
   </div>
 
   <!-- Slot Picker -->
@@ -158,7 +165,7 @@
       />
     </div>
     <div class="slot-picker__actions">
-      <button class="btn btn-ghost" (click)="showSlotPicker.set(false)">Cancel</button>
+      <button class="btn btn-ghost" (click)="showSlotPicker.set(false); selectedCandidateId.set(null)">Cancel</button>
       <button class="btn btn-primary" (click)="sendInterviews()" [disabled]="sendingInterviews()">
         <span class="material-symbols-rounded">send</span>
         {{ sendingInterviews() ? 'Sending…' : 'Send Invitations' }}
@@ -166,7 +173,7 @@
     </div>
   </div>
 
-  <button class="btn btn-primary btn-lg" *ngIf="!showSlotPicker()" (click)="showSlotPicker.set(true)">
+  <button class="btn btn-primary btn-lg" *ngIf="!showSlotPicker() && !selectedCandidateId()" (click)="openSlotPicker()">
     <span class="material-symbols-rounded">calendar_month</span>
     Schedule Interviews for Shortlisted
   </button>

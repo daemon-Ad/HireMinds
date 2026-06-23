@@ -101,6 +101,7 @@ export interface Interview {
 
 export interface InterviewTriggerRequest {
   jd_id: string;
+  candidate_id?: string;
   proposed_slots: string[];
 }
 
