@@ -31,6 +31,7 @@ def send_interviews(
         jd_id=request.jd_id,
         proposed_slots=request.proposed_slots,
         recruiter_id=current_recruiter.recruiter_id,
+        candidate_id=request.candidate_id,
     )
 
 

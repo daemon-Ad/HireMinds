@@ -80,10 +80,20 @@ class MatchingEngineAgent:
     ) -> float:
         if not required_skills:
             return 1.0  # No requirement → full score
-        req  = {s.strip().lower() for s in required_skills}
-        cand = {s.strip().lower() for s in candidate_skills}
-        matched = req & cand
-        return min(len(matched) / len(req), 1.0)
+        
+        req = [s.strip().lower() for s in required_skills if s.strip()]
+        cand = [s.strip().lower() for s in candidate_skills if s.strip()]
+        
+        if not req:
+            return 1.0
+            
+        matched_count = 0
+        for r in req:
+            # Check if required skill is a substring of candidate skill or vice versa
+            if any(r in c or c in r for c in cand):
+                matched_count += 1
+                
+        return min(matched_count / len(req), 1.0)
 
     # ── Factor 2: Experience (30%) ─────────────────────────────────────────────
 
@@ -168,7 +178,10 @@ class MatchingEngineAgent:
             )
             matrix = vectorizer.fit_transform([candidate_text, jd_text])
             score  = cosine_similarity(matrix[0:1], matrix[1:2])[0][0]
-            return float(max(0.0, min(1.0, score)))
+            # TF-IDF cosine similarity tends to be low for short resumes/JDs.
+            # Boost the score slightly to make it more representative of a match.
+            boosted_score = score * 1.5
+            return float(max(0.0, min(1.0, boosted_score)))
         except Exception as exc:
             logger.warning("MatchingEngineAgent: keyword scoring failed — %s", exc)
             return 0.0

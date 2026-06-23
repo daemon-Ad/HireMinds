@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -15,6 +15,7 @@ def send_interviews(
     jd_id: UUID,
     proposed_slots: List[str],
     recruiter_id: UUID,
+    candidate_id: Optional[UUID] = None,
 ) -> List[InterviewResponse]:
     """
     Generate and persist personalised interview invitation emails for all
@@ -33,17 +34,27 @@ def send_interviews(
             detail=f"Job description {jd_id} not found.",
         )
 
-    shortlisted = match_repo.get_shortlisted_by_jd_id(db=db, jd_id=jd_id)
-    if not shortlisted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No shortlisted candidates found for job description {jd_id}.",
-        )
+    target_matches = []
+    if candidate_id:
+        single_match = match_repo.get_by_jd_and_candidate(db=db, jd_id=jd_id, candidate_id=candidate_id)
+        if not single_match:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Match record not found for candidate {candidate_id}.",
+            )
+        target_matches = [single_match]
+    else:
+        target_matches = match_repo.get_shortlisted_by_jd_id(db=db, jd_id=jd_id)
+        if not target_matches:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No shortlisted candidates found for job description {jd_id}.",
+            )
 
     scheduler = InterviewSchedulerAgent()
     interviews = []
 
-    for match in shortlisted:
+    for match in target_matches:
         candidate = match.candidate
 
         result = scheduler.run(

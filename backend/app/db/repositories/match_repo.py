@@ -12,6 +12,13 @@ def get_by_id(db: Session, match_id: UUID) -> Optional[CandidateJDMatch]:
     ).first()
 
 
+def get_by_jd_and_candidate(db: Session, jd_id: UUID, candidate_id: UUID) -> Optional[CandidateJDMatch]:
+    return db.query(CandidateJDMatch).filter(
+        CandidateJDMatch.jd_id == jd_id,
+        CandidateJDMatch.candidate_id == candidate_id
+    ).first()
+
+
 def get_by_jd_id(db: Session, jd_id: UUID) -> List[CandidateJDMatch]:
     return (
         db.query(CandidateJDMatch)

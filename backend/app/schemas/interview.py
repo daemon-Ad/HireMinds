@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 class InterviewTriggerRequest(BaseModel):
     jd_id: UUID
+    candidate_id: Optional[UUID] = None
     proposed_slots: List[str] = []     # e.g. ["2026-07-01 10:00 AM", "2026-07-02 2:00 PM"]
 
 

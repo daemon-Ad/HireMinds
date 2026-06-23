@@ -37,16 +37,8 @@ def create_candidate(
             detail="Could not extract a valid email address from the CV.",
         )
 
-    # If candidate already exists by email, reuse them and re-run matching
-    # against this recruiter's JDs (candidate can apply to multiple roles)
-    existing = candidate_repo.get_by_email(db=db, email=parsed.email)
-    if existing:
-        orchestrator.run_matching_pipeline(
-            db=db,
-            candidate_id=existing.candidate_id,
-            recruiter_id=recruiter_id,
-        )
-        return CandidateResponse.model_validate(existing)
+    # We no longer enforce email uniqueness, allowing a candidate
+    # to be uploaded multiple times for different roles or with updated CVs.
 
     candidate = candidate_repo.create(
         db=db,
