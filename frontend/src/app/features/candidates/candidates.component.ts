@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, Input } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, RouterModule } from '@angular/router';
@@ -34,6 +34,9 @@ export class CandidatesComponent implements OnInit {
   isEditingTitle = signal(false);
   savingTitle = signal(false);
   editTitleStr = '';
+  
+  // Sort Dropdown
+  isSortDropdownOpen = signal(false);
 
   // CV Upload
   cvFile: File | null = null;
@@ -84,6 +87,23 @@ export class CandidatesComponent implements OnInit {
     this.jdId.set(jdId);
     this.jdService.getJD(jdId).subscribe(jd => this.jd.set(jd));
     this.loadCandidates();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.isSortDropdownOpen()) {
+      this.isSortDropdownOpen.set(false);
+    }
+  }
+
+  toggleSortDropdown(event: Event) {
+    event.stopPropagation();
+    this.isSortDropdownOpen.set(!this.isSortDropdownOpen());
+  }
+
+  selectSort(option: 'score' | 'time') {
+    this.sortBy.set(option);
+    this.isSortDropdownOpen.set(false);
   }
 
   loadCandidates() {

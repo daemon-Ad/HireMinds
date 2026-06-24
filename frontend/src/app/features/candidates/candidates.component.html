@@ -87,12 +87,23 @@
         <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" class="form-control" placeholder="Search by name or email..." />
       </div>
       
-      <div class="modern-input-wrapper">
-        <span class="material-symbols-rounded">sort</span>
-        <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)" class="form-control" style="appearance: auto; padding-right: 2rem;">
-          <option value="score">Sort by: Match Score</option>
-          <option value="time">Sort by: Upload Time</option>
-        </select>
+      <div style="position: relative; display: inline-block;">
+        <button class="btn btn-ghost" (click)="toggleSortDropdown($event)" style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="material-symbols-rounded">sort</span>
+          Sort By: {{ sortBy() === 'score' ? 'Match Score' : 'Upload Time' }}
+          <span class="material-symbols-rounded" style="font-size: 1.2rem;">{{ isSortDropdownOpen() ? 'expand_less' : 'expand_more' }}</span>
+        </button>
+        
+        <div class="custom-dropdown" *ngIf="isSortDropdownOpen()" style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100; min-width: 180px; display: flex; flex-direction: column; padding: 0.5rem 0;" (click)="$event.stopPropagation()">
+          <button class="dropdown-item" style="background: none; border: none; padding: 0.75rem 1rem; text-align: left; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" (click)="selectSort('score')">
+            Match Score 
+            <span class="material-symbols-rounded text-success" *ngIf="sortBy() === 'score'" style="font-size: 1.2rem;">check</span>
+          </button>
+          <button class="dropdown-item" style="background: none; border: none; padding: 0.75rem 1rem; text-align: left; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center;" (click)="selectSort('time')">
+            Upload Time 
+            <span class="material-symbols-rounded text-success" *ngIf="sortBy() === 'time'" style="font-size: 1.2rem;">check</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

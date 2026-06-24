@@ -332,3 +332,11 @@
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
+
+.custom-dropdown .dropdown-item {
+  transition: background-color 0.2s;
+}
+
+.custom-dropdown .dropdown-item:hover {
+  background-color: var(--border-hover) !important;
+}
