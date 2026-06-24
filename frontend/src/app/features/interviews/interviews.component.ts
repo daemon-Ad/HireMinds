@@ -38,8 +38,11 @@ export class InterviewsComponent implements OnInit {
     if (!['pending', 'sent', 'accepted'].includes(s)) return false;
     const slots = this.getParsedSlots(i.proposed_slots);
     const now = new Date();
-    // Active if at least one slot is in the future
-    return slots.length === 0 || slots.some(slot => new Date(slot) >= now);
+    // Active if at least one slot is in the future or unparseable
+    return slots.length === 0 || slots.some(slot => {
+      const d = new Date(slot);
+      return isNaN(d.getTime()) || d >= now;
+    });
   }));
 
   pastInterviews = computed(() => this.interviews().filter(i => {
@@ -49,7 +52,10 @@ export class InterviewsComponent implements OnInit {
       const slots = this.getParsedSlots(i.proposed_slots);
       const now = new Date();
       // Past if all slots are in the past
-      return slots.length > 0 && slots.every(slot => new Date(slot) < now);
+      return slots.length > 0 && slots.every(slot => {
+        const d = new Date(slot);
+        return !isNaN(d.getTime()) && d < now;
+      });
     }
     return false;
   }));

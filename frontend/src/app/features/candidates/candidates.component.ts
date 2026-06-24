@@ -56,7 +56,10 @@ export class CandidatesComponent implements OnInit {
   // Computed
   // Scores from backend are 0-1 fractions; shortlist threshold = 0.80
   shortlisted = computed(() => this.candidates().filter(c => c.overall_score >= 0.80));
-  allCandidates = computed(() => this.candidates());
+  allCandidates = computed(() => this.candidates().filter(c => {
+    const pct = c.overall_score > 1 ? c.overall_score : c.overall_score * 100;
+    return pct >= 45; // Do not show red zone (< 45%) in active lists
+  }));
   displayCandidates = computed(() => {
     let list = this.activeTab() === 'shortlisted' ? this.shortlisted() : this.allCandidates();
     

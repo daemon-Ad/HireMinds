@@ -101,13 +101,17 @@ Write a personalised interview invitation email for the candidate below.
 Candidate Name  : {candidate_name}
 Job Title       : {jd_title}
 Recruiter Name  : {recruiter_name}
-Proposed Slots  : {proposed_slots}(if only one slot then do not ask to choose, just say your insterview is schedules at slot)
+Proposed Slots  : {proposed_slots}
 
-Please ensure you tell candidates to be present at or before 09:30 AM on that day, in the given location (be it online or offline).
+Instructions:
+1. If only one slot is given, do not ask the candidate to choose; just state their interview is scheduled at that slot.
+2. DO NOT use placeholders like [insert date], [insert time], or [insert location].
+3. DO NOT mention any location or ask them to be present at a location unless explicitly provided in the text.
+4. DO NOT mention 09:30 AM or any other specific time unless it is exactly the slot provided.
 
 Return a JSON object with exactly these fields:
 - email_subject : string — a concise, professional email subject line
-- email_body    : string — the full email body (plain text, professional. Use \n for newlines, DO NOT use literal newlines inside the JSON string)
+- email_body    : string — the full email body (plain text, professional. Use \\n for newlines, DO NOT use literal newlines inside the JSON string)
 - proposed_slots: list of strings — echo back the proposed time slots as offered
 """
 
@@ -125,12 +129,17 @@ Candidate Name  : {candidate_name}
 Job Title       : {jd_title}
 Recruiter Name  : {recruiter_name}
 Action          : {action} (e.g., cancel, postpone)
-New Slots       : {proposed_slots} (if postponing, otherwise empty, if only one slot do not sak to choose, just say your interview is scheduled at this slot)
+New Slots       : {proposed_slots}
 
-If cancelling, be polite and concise. If postponing, apologize for the inconvenience and offer the new slots.
-Please ensure you tell candidates to be present at or before 09:30 AM on that day, in the given location (be it online or offline).
+Instructions:
+1. If postponing and only one slot is given, do not ask them to choose; just say the interview is scheduled at that slot.
+2. If cancelling, do NOT mention any future dates, times, or locations. Be polite and concise.
+3. If postponing, apologize for the inconvenience and offer the new slots.
+4. DO NOT use placeholders like [insert date], [insert time], [insert location], [ddd], or [yyy]. 
+5. DO NOT mention any location or ask them to be present at a location unless explicitly provided in the text.
+6. DO NOT mention 09:30 AM or any other specific time unless it is exactly the slot provided.
 
 Return a JSON object with exactly these fields:
 - email_subject : string — a concise, professional email subject line
-- email_body    : string — the full email body (plain text, professional. Use \n for newlines, DO NOT use literal newlines inside the JSON string)
+- email_body    : string — the full email body (plain text, professional. Use \\n for newlines, DO NOT use literal newlines inside the JSON string)
 """
