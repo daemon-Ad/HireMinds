@@ -39,7 +39,9 @@ export class CandidatesComponent implements OnInit {
   isSortDropdownOpen = signal(false);
 
   // CV Upload
-  cvFile: File | null = null;
+  cvFiles: File[] = [];
+  uploadingFilesCount = signal(0);
+  totalFilesCount = signal(0);
 
   // Interview slots
   slots: { datetime: string }[] = [
@@ -114,34 +116,67 @@ export class CandidatesComponent implements OnInit {
     });
   }
 
-  onFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.[0]) this.cvFile = input.files[0];
+  onFileSelect(event: any) {
+    if (event.target.files?.length) {
+      this.cvFiles = Array.from(event.target.files);
+    }
   }
 
   onDrop(event: DragEvent) {
     event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (file && file.type === 'application/pdf') this.cvFile = file;
+    if (event.dataTransfer?.files?.length) {
+      const files = Array.from(event.dataTransfer.files).filter(f => f.name.endsWith('.pdf'));
+      if (files.length) {
+        this.cvFiles = files;
+      }
+    }
   }
 
-  uploadCV() {
-    if (!this.cvFile) return;
+  async uploadCV() {
+    if (!this.cvFiles.length) return;
+    
     this.uploading.set(true);
+    this.totalFilesCount.set(this.cvFiles.length);
+    this.uploadingFilesCount.set(0);
     this.error.set('');
-    this.candidateService.uploadCV(this.cvFile).subscribe({
-      next: () => {
-        this.success.set('CV uploaded! AI is matching candidates…');
-        this.cvFile = null;
-        this.showUploadPanel.set(false);
-        this.uploading.set(false);
-        setTimeout(() => { this.success.set(''); this.loadCandidates(); }, 2500);
-      },
-      error: (err) => {
-        this.error.set(err.error?.detail || 'Upload failed.');
-        this.uploading.set(false);
+    
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const file of this.cvFiles) {
+      this.uploadingFilesCount.set(this.uploadingFilesCount() + 1);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          this.candidateService.uploadCV(file).subscribe({
+            next: () => {
+              successCount++;
+              resolve();
+            },
+            error: (err) => {
+              failCount++;
+              console.error(err);
+              resolve(); // Resolve anyway to continue with next file
+            }
+          });
+        });
+      } catch (e) {
+        failCount++;
       }
-    });
+    }
+
+    this.uploading.set(false);
+    this.showUploadPanel.set(false);
+    this.cvFiles = [];
+    this.totalFilesCount.set(0);
+    this.uploadingFilesCount.set(0);
+
+    if (successCount > 0) {
+      this.success.set(`Successfully uploaded ${successCount} CV(s).` + (failCount > 0 ? ` Failed: ${failCount}.` : ''));
+      this.loadCandidates();
+      setTimeout(() => this.success.set(''), 4000);
+    } else {
+      this.error.set('Failed to upload CV(s). Please ensure they are valid PDFs.');
+    }
   }
 
   openSlotPicker(candidateId?: string) {

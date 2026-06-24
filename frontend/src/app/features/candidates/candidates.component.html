@@ -43,25 +43,41 @@
     <span class="material-symbols-rounded">error</span> {{ error() }}
   </div>
 
-  <!-- CV Upload Panel -->
   <div class="upload-panel" *ngIf="showUploadPanel()">
-    <h3>Upload Candidate CV</h3>
+    <h3>Upload Candidate CVs</h3>
     <div
       class="drop-zone"
-      [class.has-file]="cvFile"
+      [class.has-file]="cvFiles.length > 0"
       (dragover)="$event.preventDefault()"
       (drop)="onDrop($event)"
       (click)="cvInput.click()"
     >
-      <input #cvInput type="file" accept=".pdf" (change)="onFileSelect($event)" hidden />
-      <span class="material-symbols-rounded drop-zone__icon">picture_as_pdf</span>
-      <p *ngIf="!cvFile">Drag & drop a PDF resume or <span class="link">browse</span></p>
-      <p *ngIf="cvFile" class="drop-zone__filename">{{ cvFile.name }}</p>
+      <input #cvInput type="file" accept=".pdf" multiple (change)="onFileSelect($event)" hidden />
+      <span class="material-symbols-rounded drop-zone__icon" *ngIf="!uploading()">picture_as_pdf</span>
+      <span class="material-symbols-rounded drop-zone__icon spinning" *ngIf="uploading()" style="animation: spin 2s linear infinite;">hourglass_top</span>
+      
+      <p *ngIf="cvFiles.length === 0">Drag & drop multiple PDF resumes or <span class="link">browse</span></p>
+      
+      <div *ngIf="cvFiles.length > 0 && !uploading()">
+        <p class="drop-zone__filename">{{ cvFiles.length }} file(s) selected</p>
+        <div style="max-height: 80px; overflow-y: auto; text-align: left; background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); margin-top: 0.5rem;">
+          <div *ngFor="let f of cvFiles" style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <span class="material-symbols-rounded" style="font-size: 0.9rem; vertical-align: middle;">description</span> {{ f.name }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="uploading()">
+        <p class="drop-zone__filename" style="color: var(--primary) !important;">
+          Processing {{ uploadingFilesCount() }} of {{ totalFilesCount() }} files...
+        </p>
+        <p style="font-size: 0.8rem; opacity: 0.8;">Please wait. Our agents are working hard.</p>
+      </div>
     </div>
     <div class="upload-panel__actions">
-      <button class="btn btn-ghost" (click)="showUploadPanel.set(false); cvFile = null">Cancel</button>
-      <button class="btn btn-primary" (click)="uploadCV()" [disabled]="!cvFile || uploading()">
-        {{ uploading() ? 'Uploading & Matching…' : 'Upload & Match' }}
+     <!--<button class="btn btn-ghost" (click)="showUploadPanel.set(false); cvFiles = []" [disabled]="uploading()">Cancel</button> -->
+      <button class="btn btn-primary" (click)="uploadCV()" [disabled]="cvFiles.length === 0 || uploading()">
+        {{ uploading() ? 'Uploading...' : 'Upload & Match' }}
       </button>
     </div>
   </div>

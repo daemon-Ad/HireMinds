@@ -31,10 +31,10 @@ def create_candidate(
     parsed = parser.run(raw_cv_text=raw_cv_text)
 
     # Guard: email is required for uniqueness; use a fallback if extraction missed it
-    if not parsed.email:
+    if not parsed.email or parsed.email.lower() == "none" or "@" not in parsed.email:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Could not extract a valid email address from the CV.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file does not appear to be a valid CV (could not extract a valid email address).",
         )
 
     # We no longer enforce email uniqueness, allowing a candidate
