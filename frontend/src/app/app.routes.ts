@@ -31,7 +31,32 @@ export const routes: Routes = [
       {
         path: 'interviews',
         loadComponent: () => import('./features/interviews/interviews.component').then(m => m.InterviewsComponent)
+      },
+      {
+        path: 'candidate/:id',
+        loadComponent: () => import('./features/candidates/candidate-profile.component').then(m => m.CandidateProfileComponent)
+      },
+      {
+        path: 'animations/matrix',
+        loadComponent: () => import('./features/animations/matrix-rain.component').then(m => m.MatrixRainComponent)
+      },
+      {
+        path: 'animations/gravity',
+        loadComponent: () => import('./features/animations/gravity-particles.component').then(m => m.GravityParticlesComponent)
+      },
+      {
+        path: 'animations/trails',
+        loadComponent: () => import('./features/animations/mouse-trails.component').then(m => m.MouseTrailsComponent)
+      },
+      {
+        path: 'animations/magnetic',
+        loadComponent: () => import('./features/animations/magnetic-field.component').then(m => m.MagneticFieldComponent)
+      },
+      {
+        path: 'animations/confetti',
+        loadComponent: () => import('./features/animations/confetti-burst.component').then(m => m.ConfettiBurstComponent)
       }
+
     ]
   },
   { path: '**', redirectTo: 'dashboard' }

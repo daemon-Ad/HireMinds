@@ -5,11 +5,11 @@
       <span>⚡</span> RecruitAI
     </div>
     <div class="about-nav__links">
-      <a href="https://github.com" target="_blank" class="btn btn-ghost">
+      <a href="https://github.com" target="_blank" class="btn btn-ghost btn-sm">
         <span class="material-symbols-rounded">code</span> GitHub
       </a>
-      <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary">Dashboard →</a>
-      <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary">Get Started →</a>
+      <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary btn-sm">Dashboard →</a>
+      <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary btn-sm">Get Started →</a>
     </div>
   </nav>
 
@@ -27,9 +27,9 @@
         and automatically schedule interviews — all in one platform.
       </p>
       <div class="hero__cta">
-        <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary btn-lg">Start Recruiting Free</a>
-        <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary btn-lg">Go to Dashboard</a>
-        <a href="http://localhost:8000/docs" target="_blank" class="btn btn-ghost btn-lg">API Docs →</a>
+        <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary">Start Recruiting Free</a>
+        <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary">Go to Dashboard</a>
+        <a href="http://localhost:8000/docs" target="_blank" class="btn btn-ghost">API Docs →</a>
       </div>
     </div>
   </section>

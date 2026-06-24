@@ -59,6 +59,22 @@ def list_candidates(
     )
 
 
+@router.get("/profile/{candidate_id}", response_model=CandidateResponse)
+def get_candidate_profile(
+    candidate_id: UUID,
+    db: Session = Depends(get_db),
+    current_recruiter: Recruiter = Depends(get_current_recruiter),
+):
+    """
+    Get full profile details for a candidate.
+    """
+    return candidate_service.get_candidate_profile(
+        db=db,
+        candidate_id=candidate_id,
+        recruiter_id=current_recruiter.recruiter_id,
+    )
+
+
 @router.get("/{jd_id}", response_model=List[CandidateWithScoreResponse])
 def get_candidates_for_jd(
     jd_id: UUID,

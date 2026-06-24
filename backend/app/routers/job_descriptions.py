@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 
-from app.schemas.job_description import JDCreateRequest, JDResponse, JDListResponse
+from app.schemas.job_description import JDCreateRequest, JDResponse, JDListResponse, JDUpdateRequest
 from app.services import jd_service
 from app.db.database import get_db
 from app.dependencies import get_current_recruiter
@@ -90,4 +90,24 @@ def get_jd(
         db=db,
         jd_id=jd_id,
         recruiter_id=current_recruiter.recruiter_id,
+    )
+
+
+@router.patch("/{jd_id}", response_model=JDResponse)
+def update_jd(
+    jd_id: UUID,
+    request: JDUpdateRequest,
+    db: Session = Depends(get_db),
+    current_recruiter: Recruiter = Depends(get_current_recruiter),
+):
+    """
+    Update a JD's fields (currently supports title).
+    """
+    if not request.title:
+        raise HTTPException(status_code=400, detail="Title is required for update")
+    return jd_service.update_jd_title(
+        db=db,
+        jd_id=jd_id,
+        recruiter_id=current_recruiter.recruiter_id,
+        new_title=request.title,
     )

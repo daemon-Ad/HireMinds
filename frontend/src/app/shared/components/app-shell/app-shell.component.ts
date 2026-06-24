@@ -61,9 +61,9 @@ export class AppShellComponent {
   isSidebarCollapsed = signal(false);
 
   navItems: NavItem[] = [
-    { path: '/dashboard',   label: 'Dashboard',         icon: 'dashboard' },
-    { path: '/jd',          label: 'Job Descriptions',  icon: 'description' },
-    { path: '/interviews',  label: 'Interviews',        icon: 'calendar_month' },
+    { path: '/dashboard',         label: 'Dashboard',         icon: 'dashboard' },
+    { path: '/jd',                label: 'Job Descriptions',  icon: 'description' },
+    { path: '/interviews',        label: 'Interviews',        icon: 'calendar_month' },
   ];
 
   readonly auth = inject(AuthService);

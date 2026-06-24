@@ -76,15 +76,15 @@
             </td>
             <td *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">
               <div class="action-buttons" *ngIf="activeTab() === 'active'">
-                <button class="btn btn-outline-primary btn-sm" (click)="openModal(interview, 'postpone')">
+                <button class="btn btn-warning btn-sm" (click)="openModal(interview, 'postpone')">
                   Postpone
                 </button>
-                <button class="btn btn-outline-danger btn-sm" (click)="openModal(interview, 'cancel')">
+                <button class="btn btn-danger btn-sm" (click)="openModal(interview, 'cancel')">
                   Cancel
                 </button>
               </div>
               <div class="action-buttons" *ngIf="activeTab() === 'postponed'">
-                <button class="btn btn-outline-primary btn-sm" (click)="openModal(interview, 'postpone')">
+                <button class="btn btn-warning btn-sm" (click)="openModal(interview, 'postpone')">
                   Schedule
                 </button>
               </div>
@@ -139,7 +139,7 @@
         </p>
 
         <div *ngIf="modalAction() === 'postpone'">
-          <p class="form-label">Provide new proposed slots:</p>
+          <p class="form-label text-white" style="color: #fff;">Provide new proposed slots:</p>
           <div class="slot-inputs">
             <div class="slot-row" *ngFor="let slot of slots; let i = index">
               <div class="modern-input-wrapper">
@@ -162,7 +162,7 @@
         <button 
           class="btn" 
           [class.btn-danger]="modalAction() === 'cancel'"
-          [class.btn-primary]="modalAction() === 'postpone'"
+          [class.btn-warning]="modalAction() === 'postpone'"
           (click)="submitUpdate()" 
           [disabled]="updating()"
         >

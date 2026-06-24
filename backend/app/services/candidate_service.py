@@ -78,6 +78,29 @@ def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateResponse]:
     return candidates
 
 
+def get_candidate_profile(db: Session, candidate_id: UUID, recruiter_id: UUID) -> CandidateResponse:
+    """
+    Return a candidate's profile if they are associated with the recruiter's JDs.
+    """
+    candidate = candidate_repo.get_by_id(db=db, candidate_id=candidate_id)
+    if not candidate:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Candidate {candidate_id} not found."
+        )
+
+    # Validate that this recruiter has access to this candidate
+    matches = match_repo.get_by_recruiter_id(db=db, recruiter_id=recruiter_id)
+    if not any(match.candidate_id == candidate_id for match in matches):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this candidate."
+        )
+
+    return CandidateResponse.model_validate(candidate)
+
+
+
 def get_ranked_candidates(
     db: Session,
     jd_id: UUID,

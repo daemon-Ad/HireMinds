@@ -30,6 +30,11 @@ export class CandidatesComponent implements OnInit {
   selectedCandidateId = signal<string | null>(null);
   expandedCandidateId = signal<string | null>(null);
 
+  // Edit Title
+  isEditingTitle = signal(false);
+  savingTitle = signal(false);
+  editTitleStr = '';
+
   // CV Upload
   cvFile: File | null = null;
 
@@ -40,13 +45,32 @@ export class CandidatesComponent implements OnInit {
     { datetime: '' }
   ];
 
+  searchQuery = signal('');
+  sortBy = signal<'score' | 'time'>('score');
+
   // Computed
   // Scores from backend are 0-1 fractions; shortlist threshold = 0.80
   shortlisted = computed(() => this.candidates().filter(c => c.overall_score >= 0.80));
   allCandidates = computed(() => this.candidates());
-  displayCandidates = computed(() =>
-    this.activeTab() === 'shortlisted' ? this.shortlisted() : this.allCandidates()
-  );
+  displayCandidates = computed(() => {
+    let list = this.activeTab() === 'shortlisted' ? this.shortlisted() : this.allCandidates();
+    
+    const query = this.searchQuery().trim().toLowerCase();
+    if (query) {
+      list = list.filter(c => 
+        (c.name && c.name.toLowerCase().includes(query)) ||
+        (c.email && c.email.toLowerCase().includes(query))
+      );
+    }
+
+    return [...list].sort((a, b) => {
+      if (this.sortBy() === 'score') {
+        return b.overall_score - a.overall_score;
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -131,6 +155,29 @@ export class CandidatesComponent implements OnInit {
       error: (err) => {
         this.error.set(err.error?.detail || 'Failed to send interviews.');
         this.sendingInterviews.set(false);
+      }
+    });
+  }
+
+  startEditingTitle() {
+    this.editTitleStr = this.jd()?.title || '';
+    this.isEditingTitle.set(true);
+  }
+
+  saveTitle() {
+    if (!this.editTitleStr.trim()) return;
+    this.savingTitle.set(true);
+    this.jdService.updateJDTitle(this.jdId(), this.editTitleStr.trim()).subscribe({
+      next: (updatedJd) => {
+        this.jd.set(updatedJd);
+        this.isEditingTitle.set(false);
+        this.savingTitle.set(false);
+        this.success.set('JD name updated successfully!');
+        setTimeout(() => this.success.set(''), 3000);
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || 'Failed to update JD name.');
+        this.savingTitle.set(false);
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -17,8 +17,23 @@ export class JobDescriptionsComponent implements OnInit {
   uploading = signal(false);
   showUploadPanel = signal(false);
   jds = signal<JobDescription[]>([]);
+  searchQuery = signal('');
   error = signal('');
   success = signal('');
+
+  displayJDs = computed(() => {
+    let list = this.jds();
+    const query = this.searchQuery().trim().toLowerCase();
+    
+    if (query) {
+      list = list.filter(jd => 
+        (jd.title && jd.title.toLowerCase().includes(query)) ||
+        (jd.raw_text && jd.raw_text.toLowerCase().includes(query))
+      );
+    }
+    
+    return [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  });
 
   // Upload form
   uploadTitle = '';

@@ -1,4 +1,4 @@
-import { Component, HostListener, signal } from '@angular/core';
+import { Component, HostListener, signal, ElementRef, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -11,7 +11,7 @@ import { AuthService } from '../../../core/auth/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit, OnDestroy {
   activeTab = signal<'login' | 'register'>('login');
   loading = signal(false);
   error = signal('');
@@ -24,6 +24,12 @@ export class LoginComponent {
   regUsername = '';
   regEmail = '';
   regPassword = '';
+
+  @ViewChild('networkCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
+  
+  private ctx!: CanvasRenderingContext2D;
+  private animationFrameId: number = 0;
+  private points: {x: number, y: number, life: number}[] = [];
 
   constructor(private auth: AuthService, private router: Router) {
     if (this.auth.isLoggedIn()) {
@@ -39,6 +45,63 @@ export class LoginComponent {
   @HostListener('window:keydown.escape', ['$event'])
   onEscape() {
     this.router.navigate(['/about']);
+  }
+
+  ngAfterViewInit() {
+    this.initCanvas();
+    this.animate();
+  }
+
+  ngOnDestroy() {
+    cancelAnimationFrame(this.animationFrameId);
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.initCanvas();
+  }
+
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    if (!this.canvasRef) return;
+    const rect = this.canvasRef.nativeElement.getBoundingClientRect();
+    this.points.push({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      life: 1.0
+    });
+  }
+
+  private initCanvas() {
+    const canvas = this.canvasRef.nativeElement;
+    canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
+    canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
+    this.ctx = canvas.getContext('2d')!;
+  }
+
+  private animate = () => {
+    this.animationFrameId = requestAnimationFrame(this.animate);
+    const canvas = this.canvasRef.nativeElement;
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (this.points.length === 0) return;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.points[0].x, this.points[0].y);
+    for (let i = 1; i < this.points.length; i++) {
+      this.ctx.lineTo(this.points[i].x, this.points[i].y);
+    }
+    
+    this.ctx.strokeStyle = '#00aa00';
+    this.ctx.lineWidth = 4;
+    this.ctx.lineCap = 'round';
+    this.ctx.lineJoin = 'round';
+    this.ctx.stroke();
+
+    for (let i = 0; i < this.points.length; i++) {
+      this.points[i].life -= 0.02;
+    }
+    this.points = this.points.filter(p => p.life > 0);
   }
 
   onLogin() {

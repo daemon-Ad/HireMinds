@@ -17,8 +17,8 @@
   transition: width var(--transition-base), min-width var(--transition-base);
 
   &.collapsed {
-    width: 80px;
-    min-width: 80px;
+    width: 64px;
+    min-width: 64px;
 
     .sidebar__logo { justify-content: center; padding-left: 0; padding-right: 0; }
     .sidebar__nav-item { justify-content: center; }

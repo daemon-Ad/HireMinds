@@ -6,14 +6,32 @@
     <span>{{ jd()?.title || 'Loading…' }}</span>
   </div>
 
-  <div class="page-header">
+  <div class="page-header" *ngIf="jd()">
     <div>
-      <h1>{{ jd()?.title || '&hellip;' }}</h1>
-      <p class="page-subtitle">AI-ranked candidates for this position</p>
+      <div *ngIf="!isEditingTitle()" style="display: flex; align-items: center; gap: 0.5rem;">
+        <h1>{{ jd()?.title }}</h1>
+        <button class="btn btn-ghost btn-sm" (click)="startEditingTitle()" title="Edit JD Name" style="padding: 0.25rem;">
+          <span class="material-symbols-rounded" style="font-size: 1.25rem;">edit</span>
+        </button>
+      </div>
+      
+      <div *ngIf="isEditingTitle()" style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+        <input type="text" [(ngModel)]="editTitleStr" class="form-control" style="font-size: 1.5rem; font-weight: bold; width: 300px;" />
+        <button class="btn btn-primary btn-sm" (click)="saveTitle()" [disabled]="savingTitle()">
+          {{ savingTitle() ? 'Saving...' : 'Save' }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="isEditingTitle.set(false)">Cancel</button>
+      </div>
+
+      <p class="page-subtitle">
+        <span class="pill">{{ jd()?.min_experience_years }}+ Yrs Exp</span>
+        <span class="pill">{{ jd()?.required_education || 'Any Degree' }}</span>
+        <span class="text-muted" style="margin-left: 1rem;">Created {{ jd()?.created_at | date:'mediumDate' }}</span>
+      </p>
     </div>
-    <button class="btn btn-ghost" (click)="showUploadPanel.set(!showUploadPanel())">
-      <span class="material-symbols-rounded">upload_file</span>
-      Upload CV
+    <button class="btn btn-primary" (click)="showUploadPanel.set(!showUploadPanel())">
+      <span class="material-symbols-rounded">{{ showUploadPanel() ? 'close' : 'upload_file' }}</span>
+      {{ showUploadPanel() ? 'Cancel' : 'Upload Candidates CVs' }}
     </button>
   </div>
 
@@ -48,18 +66,35 @@
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab" [class.active]="activeTab() === 'shortlisted'" (click)="activeTab.set('shortlisted')">
-      <span class="material-symbols-rounded">verified</span>
-      Shortlisted
-      <span class="tab__badge tab__badge--green">{{ shortlisted().length }}</span>
-    </button>
-    <button class="tab" [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">
-      <span class="material-symbols-rounded">group</span>
-      All Candidates
-      <span class="tab__badge">{{ allCandidates().length }}</span>
-    </button>
+  <!-- Tabs and Filters -->
+  <div class="controls-bar" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem;">
+    <div class="tabs" style="margin-bottom: 0;">
+      <button class="tab" [class.active]="activeTab() === 'shortlisted'" (click)="activeTab.set('shortlisted')">
+        <span class="material-symbols-rounded">verified</span>
+        Shortlisted
+        <span class="tab__badge tab__badge--green">{{ shortlisted().length }}</span>
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">
+        <span class="material-symbols-rounded">group</span>
+        All Candidates
+        <span class="tab__badge">{{ allCandidates().length }}</span>
+      </button>
+    </div>
+
+    <div class="filters" style="display: flex; gap: 1rem; align-items: center;">
+      <div class="modern-input-wrapper" style="width: 250px;">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" class="form-control" placeholder="Search by name or email..." />
+      </div>
+      
+      <div class="modern-input-wrapper">
+        <span class="material-symbols-rounded">sort</span>
+        <select [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)" class="form-control" style="appearance: auto; padding-right: 2rem;">
+          <option value="score">Sort by: Match Score</option>
+          <option value="time">Sort by: Upload Time</option>
+        </select>
+      </div>
+    </div>
   </div>
 
   <!-- Candidates List -->
@@ -141,6 +176,13 @@
                 <span class="sub-score__label">Keywords</span>
                 <span class="sub-score__val">{{ toPercent(match.keyword_score) }}%</span>
               </div>
+            </div>
+
+            <!-- Card Actions -->
+            <div class="candidate-card__actions" style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+              <a [routerLink]="['/candidate', match.candidate_id]" class="btn btn-ghost btn-sm">
+                View profile
+              </a>
             </div>
           </ng-container>
         </div>
