@@ -2,11 +2,11 @@
   <!-- Nav -->
   <nav class="about-nav">
     <div class="about-nav__logo">
-      <span>⚡</span> RecruitAI
+      <img src="assets/logo.png" alt="HireMinds Logo" style="height: 1.5em; vertical-align: middle;"> HireMinds
     </div>
     <div class="about-nav__links">
-      <a href="https://github.com" target="_blank" class="btn btn-ghost btn-sm">
-        <span class="material-symbols-rounded">code</span> GitHub
+      <a href="https://github.com/daemon-Ad/Multi-Agent-AI-Recruitment-Platform" target="_blank" class="btn btn-ghost btn-sm" style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="height: 1.2em; filter: invert(1);"> GitHub
       </a>
       <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary btn-sm">Dashboard →</a>
       <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary btn-sm">Get Started →</a>
@@ -17,10 +17,6 @@
   <section class="hero">
     <canvas #networkCanvas class="hero__bg"></canvas>
     <div class="hero__content page-enter">
-      <div class="hero__badge">
-        <span class="material-symbols-rounded">auto_awesome</span>
-        Powered by Groq LLM
-      </div>
       <h1 class="hero__title">AI-Powered Recruitment,<br>Done Right.</h1>
       <p class="hero__subtitle">
         Upload job descriptions, let AI parse them, match candidate CVs with intelligent scoring,
@@ -29,7 +25,7 @@
       <div class="hero__cta">
         <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary">Start Recruiting Free</a>
         <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary">Go to Dashboard</a>
-        <a href="http://localhost:8000/docs" target="_blank" class="btn btn-ghost">API Docs →</a>
+        <a routerLink="/api-services" class="btn btn-ghost">API Services →</a>
       </div>
     </div>
   </section>
@@ -50,23 +46,21 @@
     </div>
   </section>
 
-  <!-- Tech Stack -->
-  <section class="tech-stack">
-    <div class="section-label">Tech Stack</div>
-    <h2>Built with modern tools</h2>
-    <div class="tech-grid">
-      <div class="tech-pill" *ngFor="let tech of techStack" [style.border-color]="tech.color + '33'">
-        <span class="tech-dot" [style.background]="tech.color"></span>
-        {{ tech.name }}
-      </div>
-    </div>
+  <!-- Build Faster -->
+  <section class="tech-stack" style="text-align: center; max-width: 800px; margin: 0 auto; padding-top: 4rem;">
+    <div class="section-label">Start building in seconds</div>
+    <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">Kickstart your next recruitment pipeline</h2>
+    <p style="color: var(--text-muted); font-size: 1.2rem; line-height: 1.6;">
+      Accelerate your hiring process with AI agents built by us and our community. 
+      Automate parsing, matching, and scheduling out-of-the-box.
+    </p>
   </section>
 
   <!-- Footer -->
   <footer class="about-footer">
-    <span>Multi-Agent AI Recruitment Platform</span>
-    <a href="https://github.com" target="_blank" class="btn btn-ghost">
-      <span class="material-symbols-rounded">code</span> View on GitHub
+    <span>Multi-Agent AI Recruitment Platform &#64;2026</span>
+    <a href="https://github.com/daemon-Ad/Multi-Agent-AI-Recruitment-Platform" target="_blank" class="btn btn-ghost" style="display: flex; align-items: center; gap: 0.5rem;">
+      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="height: 1.2em; filter: invert(1);"> View on GitHub
     </a>
   </footer>
 </div>

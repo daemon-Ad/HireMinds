@@ -44,14 +44,14 @@ def upload_candidate(
     )
 
 
-@router.get("/", response_model=List[CandidateResponse])
+@router.get("/", response_model=List[CandidateWithScoreResponse])
 def list_candidates(
     db: Session = Depends(get_db),
     current_recruiter: Recruiter = Depends(get_current_recruiter),
 ):
     """
     List all candidates that have been matched against this recruiter's JDs.
-    Deduplicates candidates who matched multiple JDs.
+    Deduplicates candidates who matched multiple JDs, showing the score for the first matched JD.
     """
     return candidate_service.list_candidates(
         db=db,

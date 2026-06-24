@@ -1,267 +1,124 @@
 # Multi-Agent AI Recruitment Platform 🚀
 
-An intelligent, agent-driven platform for automated recruitment, candidate management, and hiring assistance.
+An intelligent, agent-driven platform for automated recruitment, candidate parsing, matching, and interview scheduling.
 
 ## Table of Contents
 
 - [Overview](#overview)  
 - [Key Features](#key-features)  
 - [Tech Stack](#tech-stack)  
-- [Prerequisites](#prerequisites)  
-- [Installation](#installation)  
-- [Configuration](#configuration)  
+- [Project Structure](#project-structure)  
+- [Setup and Installation](#setup-and-installation)  
+- [Environment Variables](#environment-variables)  
 - [Running the Application](#running-the-application)  
-- [Agent System](#agent-system)  
-- [Data Model](#data-model)  
-- [Testing](#testing)  
-- [Deployment](#deployment)  
-- [Troubleshooting](#troubleshooting)  
-- [License](#license)
 
 ## Overview
 
-Multi-Agent AI Recruitment Platform is a comprehensive recruitment management system powered by intelligent agents. The platform automates key HR processes including job posting, candidate sourcing, resume screening, interview scheduling, and communication.
+The Multi-Agent AI Recruitment Platform streamlines the hiring process by intelligently parsing Job Descriptions and Candidate CVs, computing comprehensive Match Scores, and fully automating personalised interview scheduling using Large Language Models (LLMs). 
 
 ### Goals
-- Streamline the hiring workflow
-- Reduce time-to-hire
-- Improve candidate experience
-- Enable data-driven hiring decisions
-- Automate repetitive HR tasks
+- Fully parse and extract actionable criteria from Job Descriptions (JDs)
+- Ingest applicant CVs (PDFs) and extract relevant skills and experience
+- Generate automated, data-driven candidate match scores
+- Schedule, postpone, and cancel interviews dynamically using AI-generated emails
 
 ## Key Features
 
 ### 📋 Job Management
-- Create, edit, and manage job postings
-- Categorize jobs by department, location, experience level
-- Define job requirements and responsibilities
-- Track job status (open, closed, on-hold)
+- Upload raw Job Descriptions and have an AI Agent summarize requirements.
+- Track all active job postings from a centralized dashboard.
 
-### 👥 Candidate Management
-- Centralized candidate database
-- Detailed candidate profiles
-- Skill and experience tracking
-- Application history
+### 👥 Candidate Parsing & Matching
+- Upload candidate CVs (PDF) via drag-and-drop.
+- **AI Match Engine**: Automatically computes a percentage-based match score prioritizing Skills, Experience, Education, and Keyword alignment.
+- Sort and filter top candidates quickly.
+- Global Candidates Archive to maintain past applicant data.
 
-### 🤖 Intelligent Agents
-- **Resume Screening Agent**: Automatically screens resumes based on job requirements
-- **Interview Scheduling Agent**: Coordinates interview schedules between candidates and hiring managers
-- **Communication Agent**: Handles automated email and SMS communication
-- **Analytics Agent**: Generates hiring insights and recommendations
-- **Recruiter Assistant**: Supports recruiters with data and suggestions
+### 🤖 LLM-Powered Interview Scheduling
+- **Interview Scheduler Agent**: Autonomously drafts hyper-personalized emails to candidates offering specific interview time slots.
+- Handles context-aware actions like postponing and cancelling interviews via natural language emails without relying on rigid templates.
 
-### ⚙️ Workflow Automation
-- End-to-end recruitment workflow automation
-- Email/SMS notifications and reminders
-- Automatic status updates
-- Customizable workflows
-
-### 📊 Analytics and Reporting
-- Hiring pipeline visualization
-- Time-to-hire metrics
-- Candidate source effectiveness
-- AI-powered hiring recommendations
-
-### 🌐 Public Job Portal
-- Publicly accessible job listings
-- Online application submission
-- Email notifications for new applications
-- Candidate self-service
-
-### 🔒 Security
-- Role-based access control (Admin, HR, Recruiter, Hiring Manager)
-- Secure authentication
-- Data encryption
-- Audit logging
+### 🎨 State-of-the-art UI
+- Built with an ultra-premium, dark-themed **Angular 17** interface.
+- Utilizes dynamic visual features such as custom Canvas-based interactive background animations (Matrix Rain, Magnetic Fields, etc.).
 
 ## Tech Stack
 
 ### Backend
-- **Language**: Python 3.10+
-- **Framework**: FastAPI (async) 🚀
-- **Database**: PostgreSQL
-- **ORM**: SQLModel (SQLAlchemy + Pydantic)
-- **Agent Framework**: CrewAI
-- **Authentication**: JWT (python-jose)
-- **Background Tasks**: Celery + Redis
+- **Language**: Python 3.12+
+- **Framework**: FastAPI
+- **Database**: SQLite / PostgreSQL (via SQLAlchemy)
+- **AI / LLM Integration**: Groq API (Llama 3.1) 
+- **PDF Extraction**: PyMuPDF
 - **Validation**: Pydantic
 
 ### Frontend
-- **Framework**: Next.js (App Router)
+- **Framework**: Angular 17
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: React Context API
-- **HTTP Client**: Axios
+- **Styling**: SCSS (Custom Design System with Glassmorphism)
 
-### Infrastructure
-- **Web Server**: Nginx (optional for production)
-- **Message Broker**: Redis
-- **Containerization**: Docker
-- **Container Orchestration**: Docker Compose
+## Project Structure
 
-### Development Tools
-- **Package Manager**: pip + npm/yarn
-- **Code Quality**: Ruff, Black, isort
-- **Type Checking**: Mypy
-- **Testing**: pytest, httpx, requests
-- **Linting**: ESLint, Stylelint
+- `backend/`: FastAPI backend containing routers, services, DB models, and the AI Agents (`cv_parser`, `interview_scheduler`, `jd_summarizer`, `matching_engine`).
+- `frontend/`: Angular 17 web application containing UI features, global state, API interceptors, and components.
 
-## Prerequisites
+## Setup and Installation
 
-### Software Requirements
-- Python 3.10 or higher
-- Node.js 18.0 or higher
-- PostgreSQL 13 or higher
-- Redis 7.0 or higher
-- Docker & Docker Compose (for containerized deployment)
+### Prerequisites
+- Python 3.12+
+- Node.js 18.0+
+- Angular CLI
+- API Key from Groq
 
-### Hardware Requirements
-- RAM: 4GB minimum (8GB recommended)
-- Disk Space: 5GB free
-- CPU: 2 cores minimum
+### 1. Backend Setup
+```bash
+# Navigate to backend
+cd backend
 
-## Installation
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-### Option 1: Containerized Deployment (Recommended)
+# Install dependencies
+pip install -r requirements.txt
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/celestial/Multi-Agent-AI-Recruitment-Platform.git
-   cd Multi-Agent-AI-Recruitment-Platform
-   ```
+### 2. Frontend Setup
+```bash
+# Navigate to frontend
+cd frontend
 
-2. **Create a .env file** (copy from .env.example)
-   ```bash
-   cp .env.example .env
-   ```
+# Install dependencies
+npm install
+```
 
-3. **Configure environment variables** in .env
+## Environment Variables
 
-4. **Build and start containers**
-   ```bash
-   docker-compose up --build -d
-   ```
+Create a `.env` file in the `backend/` directory with the following contents:
 
-5. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000
-   - Swagger UI: http://localhost:8000/docs
-
-### Option 2: Local Development
-
-1. **Backend Setup**
-
-   ```bash
-   # Create virtual environment
-   python3 -m venv venv
-   source venv/bin/activate
-
-   # Install dependencies
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
-
-   # Create database
-   createdb recruitment
-
-   # Run migrations (SQLModel)
-   sqlmodel-alembic init
-   sqlmodel-alembic upgrade head
-
-   # Seed database (optional)
-   python app/scripts/seed_admin.py
-   ```
-
-2. **Frontend Setup**
-
-   ```bash
-   # Install dependencies
-   cd frontend
-   npm install
-
-   # Copy .env.local.example to .env.local
-   cp .env.local.example .env.local
-   ```
-
-3. **Configure Environment Variables**
-
-   Create `.env` files in both backend and frontend directories:
-
-   **Backend (.env)**
-   ```ini
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/recruitment"
-   SECRET_KEY="your-secret-key"
-   ALGORITHM="HS256"
-   ACCESS_TOKEN_EXPIRE_MINUTES=30
-   REDIS_URL="redis://localhost:6379/0"
-   ```
-
-   **Frontend (.env.local)**
-   ```ini
-   NEXT_PUBLIC_API_URL=http://localhost:8000
-   ```
-
-4. **Start Backend**
-
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-5. **Start Frontend**
-
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `SECRET_KEY` | Yes | Secret key for JWT signing |
-| `ALGORITHM` | Yes | JWT signing algorithm |
-| `REDIS_URL` | Yes | Redis connection string |
-| `MAIL_USERNAME` | No | SMTP username |
-| `MAIL_PASSWORD` | No | SMTP password |
-| `MAIL_FROM` | No | Sender email |
-| `MAIL_PORT` | No | SMTP port |
-| `MAIL_SERVER` | No | SMTP server |
-| `MAIL_STARTTLS` | No | Enable TLS |
-
-### Agent Configuration
-
-Agent behaviors can be configured in `app/agents/config.py`:
-
-```python
-# Resume Screening Agent configuration
-SCREENING_RULES = {
-    "min_experience_years": 2,
-    "required_skills": ["python", "sql", "api"],
-    "score_threshold": 60
-}
-
-# Interview Scheduling - buffer time between interviews
-INTERVIEW_BUFFER_MINUTES = 15
-
-# Communication templates location
-EMAIL_TEMPLATES_DIR = "app/templates/emails"
+```ini
+DATABASE_URL="sqlite:///./recruitment.db"
+SECRET_KEY="your-secure-secret-key"
+ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=1440
+GROQ_API_KEY="your-groq-api-key"
+GROQ_MODEL="llama-3.1-8b-instant"
 ```
 
 ## Running the Application
 
-### Starting All Services (Containerized)
+### Start the Backend
+From the `backend/` directory, ensure your virtual environment is activated and run:
 ```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+uvicorn app.main:app --reload
 ```
+The FastAPI application will start at `http://localhost:8000`. You can access the automatic Swagger documentation at `http://localhost:8000/docs`.
 
-### Running Backend Separately
+### Start the Frontend
+From the `frontend/` directory, run:
 ```bash
+npm start
+```
+The Angular application will start at `http://localhost:4200`.
+
+Open your browser and navigate to the frontend URL to start using the platform!

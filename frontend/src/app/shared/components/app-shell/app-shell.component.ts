@@ -17,12 +17,12 @@ interface NavItem {
     <div class="shell">
       <!-- Sidebar -->
       <aside class="sidebar" [class.collapsed]="isSidebarCollapsed()">
-        <div class="sidebar__logo">
-          <button class="sidebar__toggle" (click)="isSidebarCollapsed.set(!isSidebarCollapsed())">
+        <div class="sidebar__logo" routerLink="/about" style="cursor: pointer;">
+          <button class="sidebar__toggle" (click)="isSidebarCollapsed.set(!isSidebarCollapsed()); $event.stopPropagation()">
             <span class="material-symbols-rounded">menu</span>
           </button>
-          <span class="sidebar__logo-icon" *ngIf="!isSidebarCollapsed()">⚡</span>
-          <span class="sidebar__logo-text" *ngIf="!isSidebarCollapsed()">RecruitAI</span>
+          <img src="assets/logo.png" alt="HireMinds Logo" style="height: 1.5em; vertical-align: middle;" *ngIf="!isSidebarCollapsed()">
+          <span class="sidebar__logo-text" *ngIf="!isSidebarCollapsed()">HireMinds</span>
         </div>
 
         <nav class="sidebar__nav">
@@ -38,9 +38,17 @@ interface NavItem {
         </nav>
 
         <div class="sidebar__footer">
+          <a routerLink="/api-services" routerLinkActive="active" class="sidebar__nav-item" [title]="isSidebarCollapsed() ? 'API Services' : ''">
+            <span class="material-symbols-rounded">api</span>
+            <span class="sidebar__nav-text" *ngIf="!isSidebarCollapsed()">API Services</span>
+          </a>
           <a routerLink="/about" routerLinkActive="active" class="sidebar__nav-item" [title]="isSidebarCollapsed() ? 'About' : ''">
             <span class="material-symbols-rounded">info</span>
-            <span *ngIf="!isSidebarCollapsed()">About</span>
+            <span class="sidebar__nav-text" *ngIf="!isSidebarCollapsed()">About</span>
+          </a>
+          <a href="https://github.com/daemon-Ad/Multi-Agent-AI-Recruitment-Platform" target="_blank" class="sidebar__nav-item" [title]="isSidebarCollapsed() ? 'GitHub' : ''">
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="height: 1.3em; filter: invert(1); opacity: 0.7; margin-left: 0.1rem;">
+            <span class="sidebar__nav-text" *ngIf="!isSidebarCollapsed()">GitHub</span>
           </a>
           <button class="sidebar__logout" (click)="auth.logout()" [title]="isSidebarCollapsed() ? 'Sign out' : ''">
             <span class="material-symbols-rounded">logout</span>

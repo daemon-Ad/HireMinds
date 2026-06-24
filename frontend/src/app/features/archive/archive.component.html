@@ -15,6 +15,7 @@
         </tr>
         <tr *ngIf="type() === 'candidates'">
           <th style="padding: 1rem; text-align: left;">Name</th>
+          <th style="padding: 1rem; text-align: left;">Match Score</th>
           <th style="padding: 1rem; text-align: left;">Email</th>
           <th style="padding: 1rem; text-align: left;">Phone</th>
           <th style="padding: 1rem; text-align: left;">Date Added</th>
@@ -34,8 +35,12 @@
           </ng-container>
           <ng-container *ngIf="type() === 'candidates'">
             <td style="padding: 1rem;">{{ row.name }}</td>
+            <td style="padding: 1rem; font-weight: 500;">
+              <span *ngIf="row.overall_score !== undefined">{{ formatScore(row.overall_score) }}%</span>
+              <span *ngIf="row.overall_score === undefined" style="color: var(--text-muted)">N/A</span>
+            </td>
             <td style="padding: 1rem;">{{ row.email }}</td>
-            <td style="padding: 1rem;">{{ row.phone }}</td>
+            <td style="padding: 1rem;">{{ row.phone || 'N/A' }}</td>
             <td style="padding: 1rem;">{{ formatDate(row.created_at) }}</td>
           </ng-container>
           <ng-container *ngIf="type() === 'interviews'">

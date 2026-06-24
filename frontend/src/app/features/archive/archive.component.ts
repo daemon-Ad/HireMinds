@@ -64,4 +64,9 @@ export class ArchiveComponent implements OnInit {
     if (!dateStr) return 'N/A';
     return new Date(dateStr).toLocaleString();
   }
+
+  formatScore(score: number | undefined): number {
+    if (score === undefined || score === null) return 0;
+    return Math.round((score > 1 ? score : score * 100));
+  }
 }

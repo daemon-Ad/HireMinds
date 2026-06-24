@@ -61,7 +61,7 @@ def create_candidate(
     return CandidateResponse.model_validate(candidate)
 
 
-def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateResponse]:
+def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateWithScoreResponse]:
     """
     Return all candidates that have at least one match record against
     this recruiter's JDs — i.e. candidates this recruiter has uploaded CVs for.
@@ -74,7 +74,25 @@ def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateResponse]:
         candidate = match.candidate
         if candidate.candidate_id not in seen:
             seen.add(candidate.candidate_id)
-            candidates.append(CandidateResponse.model_validate(candidate))
+            candidates.append(
+                CandidateWithScoreResponse(
+                    candidate_id=candidate.candidate_id,
+                    name=candidate.name,
+                    email=candidate.email,
+                    phone=candidate.phone,
+                    skills=candidate.skills,
+                    experience_json=candidate.experience_json,
+                    education_json=candidate.education_json,
+                    raw_cv_text=candidate.raw_cv_text,
+                    created_at=candidate.created_at,
+                    overall_score=match.overall_score,
+                    skill_score=match.skill_score,
+                    experience_score=match.experience_score,
+                    education_score=match.education_score,
+                    keyword_score=match.keyword_score,
+                    is_shortlisted=match.is_shortlisted,
+                )
+            )
     return candidates
 
 

@@ -59,8 +59,11 @@ export const routes: Routes = [
       {
         path: 'animations/confetti',
         loadComponent: () => import('./features/animations/confetti-burst.component').then(m => m.ConfettiBurstComponent)
+      },
+      {
+        path: 'api-services',
+        loadComponent: () => import('./features/api-services/api-services.component').then(m => m.ApiServicesComponent)
       }
-
     ]
   },
   { path: '**', redirectTo: 'dashboard' }
