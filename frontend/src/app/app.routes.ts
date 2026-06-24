@@ -37,6 +37,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/candidates/candidate-profile.component').then(m => m.CandidateProfileComponent)
       },
       {
+        path: 'archive/:type',
+        loadComponent: () => import('./features/archive/archive.component').then(m => m.ArchiveComponent)
+      },
+      {
         path: 'animations/matrix',
         loadComponent: () => import('./features/animations/matrix-rain.component').then(m => m.MatrixRainComponent)
       },

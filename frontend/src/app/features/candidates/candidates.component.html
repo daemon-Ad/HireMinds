@@ -125,7 +125,7 @@
   </div>
 
   <!-- Candidates List -->
-  <div *ngIf="!loading(); else skeletonCards">
+  <div *ngIf="!loading(); else skeleton">
     <div class="empty-state" *ngIf="displayCandidates().length === 0">
       <span class="material-symbols-rounded">person_search</span>
       <p *ngIf="activeTab() === 'shortlisted'">No candidates above 80% match yet. Upload more CVs!</p>
@@ -215,11 +215,14 @@
         </div>
       </div>
     </div>
+    <div style="text-align: center; padding: 2rem;" *ngIf="displayCandidates().length > 0">
+      <a routerLink="/archive/candidates" style="color: var(--text-muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer;">View full archived data</a>
+    </div>
   </div>
-
-  <ng-template #skeletonCards>
+  
+  <ng-template #skeleton>
     <div class="candidate-list">
-      <div class="candidate-card skeleton-card" *ngFor="let i of [1,2,3]"></div>
+      <div class="candidate-card card skeleton-card" *ngFor="let i of [1,2,3]"></div>
     </div>
   </ng-template>
 </div>

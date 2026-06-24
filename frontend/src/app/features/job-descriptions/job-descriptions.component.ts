@@ -32,7 +32,7 @@ export class JobDescriptionsComponent implements OnInit {
       );
     }
     
-    return [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return [...list].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 100);
   });
 
   // Upload form

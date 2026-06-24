@@ -37,7 +37,7 @@
     <div class="card section-card">
       <h2>Skills & Tech Stack</h2>
       <div class="skills-grid" *ngIf="getSkills().length; else noSkills">
-        <span class="pill pill-success" *ngFor="let skill of getSkills()">{{ skill }}</span>
+        <span class="skill-text" style="color: white; font-size: 0.9375rem;">{{ getSkills().join(', ') }}</span>
       </div>
       <ng-template #noSkills><p class="text-muted">No skills parsed.</p></ng-template>
     </div>

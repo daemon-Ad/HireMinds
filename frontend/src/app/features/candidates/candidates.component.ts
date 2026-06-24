@@ -74,7 +74,7 @@ export class CandidatesComponent implements OnInit {
       } else {
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       }
-    });
+    }).slice(0, 100);
   });
 
   constructor(

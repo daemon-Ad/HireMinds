@@ -111,6 +111,10 @@
         </div>
       </a>
     </div>
+    
+    <div style="text-align: center; padding: 2rem;" *ngIf="displayJDs().length > 0">
+      <a routerLink="/archive/jds" style="color: var(--text-muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer;">View full archived data</a>
+    </div>
   </div>
 
   <ng-template #skeletonGrid>
