@@ -3,11 +3,66 @@ from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from app.schemas.interview import InterviewResponse
 from app.db.repositories import match_repo, interview_repo, jd_repo
 from app.agents.interview_scheduler import InterviewSchedulerAgent
+
+def parse_datetime(dt_str: str) -> datetime:
+    try:
+        return datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+    except ValueError:
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%d/%m/%Y %H:%M", "%m/%d/%Y %H:%M", "%Y-%m-%d %I:%M %p", "%Y-%m-%d %I:%M%p"):
+            try:
+                return datetime.strptime(dt_str.strip(), fmt)
+            except ValueError:
+                continue
+        raise ValueError(f"Could not parse datetime string: {dt_str}")
+
+def get_next_free_slot(db: Session, recruiter_id: UUID, start_time: datetime, additional_taken_slots: List[datetime] = None) -> datetime:
+    existing_interviews = interview_repo.get_by_recruiter_id(db=db, recruiter_id=recruiter_id)
+    taken_slots = []
+    if additional_taken_slots:
+        taken_slots.extend(additional_taken_slots)
+
+    for iv in existing_interviews:
+        if iv.status not in ["cancelled", "failed", "rejected", "postponed"]:
+            if iv.proposed_slots:
+                try:
+                    slots = json.loads(iv.proposed_slots)
+                    for s in slots:
+                        try:
+                            dt = parse_datetime(s)
+                            if dt.tzinfo is None:
+                                dt = dt.replace(tzinfo=timezone.utc)
+                            taken_slots.append(dt)
+                        except Exception:
+                            pass
+                except Exception:
+                    pass
+
+    taken_slots.sort()
+
+    while True:
+        if start_time.hour > 17 or (start_time.hour == 17 and start_time.minute > 30):
+            start_time += timedelta(days=1)
+            start_time = start_time.replace(hour=9, minute=30, second=0, microsecond=0)
+        elif start_time.hour < 9 or (start_time.hour == 9 and start_time.minute < 30):
+            start_time = start_time.replace(hour=9, minute=30, second=0, microsecond=0)
+
+        collision = False
+        for ts in taken_slots:
+            diff = abs((start_time - ts).total_seconds())
+            if diff < 40 * 60:
+                collision = True
+                start_time = ts + timedelta(minutes=40)
+                break
+        
+        if not collision:
+            break
+            
+    return start_time
 
 
 def send_interviews(
@@ -53,15 +108,29 @@ def send_interviews(
 
     scheduler = InterviewSchedulerAgent()
     interviews = []
+    batch_taken_slots = []
 
     for match in target_matches:
         candidate = match.candidate
+
+        candidate_adjusted_slots = []
+        for slot_str in proposed_slots:
+            try:
+                dt = parse_datetime(slot_str)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                
+                free_dt = get_next_free_slot(db, recruiter_id, dt, batch_taken_slots)
+                batch_taken_slots.append(free_dt)
+                candidate_adjusted_slots.append(free_dt.strftime("%Y-%m-%d %I:%M %p"))
+            except ValueError:
+                candidate_adjusted_slots.append(slot_str)
 
         result = scheduler.run(
             candidate_name=candidate.name,
             jd_title=jd.title,
             recruiter_name=match.recruiter.username,   # actual recruiter name, not hardcoded
-            proposed_slots=proposed_slots,
+            proposed_slots=candidate_adjusted_slots,
         )
 
         interview = interview_repo.create_or_update(
@@ -102,16 +171,34 @@ def update_interview(
     candidate = match.candidate
     jd = match.job_description
 
+    adjusted_new_slots = []
+    for slot_str in new_slots:
+        try:
+            dt = parse_datetime(slot_str)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            
+            free_dt = get_next_free_slot(db, recruiter_id, dt)
+            adjusted_new_slots.append(free_dt.strftime("%Y-%m-%d %I:%M %p"))
+        except ValueError:
+            adjusted_new_slots.append(slot_str)
+
     scheduler = InterviewSchedulerAgent()
     result = scheduler.update_interview(
         candidate_name=candidate.name,
         jd_title=jd.title,
         recruiter_name=match.recruiter.username,
         action=action,
-        proposed_slots=new_slots
+        proposed_slots=adjusted_new_slots
     )
 
-    new_status = "cancelled" if action == "cancel" else "postponed"
+    if action == "cancel":
+        new_status = "cancelled"
+    else:
+        if interview.status.value == "postponed":
+            new_status = "sent"
+        else:
+            new_status = "postponed"
 
     interview = interview_repo.create_or_update(
         db=db,

@@ -67,7 +67,7 @@ Calculate scores between 0.0 and 1.0 for the following categories:
 - experience_score: Does candidate meet or exceed min experience?
 - education_score: Does candidate meet required education?
 - keyword_score: Semantic alignment of keywords.
-- overall_score: Weighted average. Priority: Skills (40%), Experience (30%), Education (20%), Keywords (10%).
+- overall_score: Weighted average. Priority: Skills (40%), Experience (30%), Education (10%), Keywords (20%).
 
 Return a JSON object exactly like this:
 {{
@@ -101,7 +101,9 @@ Write a personalised interview invitation email for the candidate below.
 Candidate Name  : {candidate_name}
 Job Title       : {jd_title}
 Recruiter Name  : {recruiter_name}
-Proposed Slots  : {proposed_slots}
+Proposed Slots  : {proposed_slots}(if only one slot then do not ask to choose, just say your insterview is schedules at slot)
+
+Please ensure you tell candidates to be present at or before 09:30 AM on that day, in the given location (be it online or offline).
 
 Return a JSON object with exactly these fields:
 - email_subject : string — a concise, professional email subject line
@@ -123,9 +125,10 @@ Candidate Name  : {candidate_name}
 Job Title       : {jd_title}
 Recruiter Name  : {recruiter_name}
 Action          : {action} (e.g., cancel, postpone)
-New Slots       : {proposed_slots} (if postponing, otherwise empty)
+New Slots       : {proposed_slots} (if postponing, otherwise empty, if only one slot do not sak to choose, just say your interview is scheduled at this slot)
 
 If cancelling, be polite and concise. If postponing, apologize for the inconvenience and offer the new slots.
+Please ensure you tell candidates to be present at or before 09:30 AM on that day, in the given location (be it online or offline).
 
 Return a JSON object with exactly these fields:
 - email_subject : string — a concise, professional email subject line
