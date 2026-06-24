@@ -3,15 +3,6 @@
   background: var(--bg-base);
   color: var(--text-primary);
   position: relative;
-
-  &::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.05), transparent 40%);
-    z-index: 100;
-  }
 }
 
 // ── Nav ──────────────────────────────────────────────────────
@@ -64,18 +55,7 @@
   &__cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 }
 
-// Mesh
-.mesh {
-  position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.2;
-  animation: float 8s ease-in-out infinite;
-  &--1 { width: 500px; height: 500px; background: radial-gradient(circle, var(--primary) 0%, transparent 70%); top: -150px; left: -100px; }
-  &--2 { width: 400px; height: 400px; background: radial-gradient(circle, #3b82f6 0%, transparent 70%); bottom: -100px; right: -80px; animation-delay: -4s; }
-}
 
-@keyframes float {
-  0%,100% { transform: translate(0,0); }
-  50%      { transform: translate(30px,-20px); }
-}
 
 // ── Sections ─────────────────────────────────────────────────
 .how-it-works, .tech-stack {

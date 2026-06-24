@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, HostListener, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -34,6 +34,11 @@ export class LoginComponent {
   setTab(tab: 'login' | 'register') {
     this.activeTab.set(tab);
     this.error.set('');
+  }
+
+  @HostListener('window:keydown.escape', ['$event'])
+  onEscape() {
+    this.router.navigate(['/about']);
   }
 
   onLogin() {

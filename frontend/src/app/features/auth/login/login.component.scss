@@ -74,6 +74,25 @@
   box-shadow: var(--shadow-lg);
   animation: fadeInUp 0.5s var(--transition-base) both;
 
+  &__close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    
+    &:hover {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+    }
+  }
+
   &__logo {
     display: flex;
     align-items: center;
