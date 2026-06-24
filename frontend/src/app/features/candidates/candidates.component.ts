@@ -28,6 +28,7 @@ export class CandidatesComponent implements OnInit {
   showUploadPanel = signal(false);
   showSlotPicker = signal(false);
   selectedCandidateId = signal<string | null>(null);
+  expandedCandidateId = signal<string | null>(null);
 
   // CV Upload
   cvFile: File | null = null;
@@ -102,6 +103,14 @@ export class CandidatesComponent implements OnInit {
   openSlotPicker(candidateId?: string) {
     this.selectedCandidateId.set(candidateId || null);
     this.showSlotPicker.set(true);
+  }
+
+  toggleExpand(candidateId: string) {
+    if (this.expandedCandidateId() === candidateId) {
+      this.expandedCandidateId.set(null);
+    } else {
+      this.expandedCandidateId.set(candidateId);
+    }
   }
 
   sendInterviews() {

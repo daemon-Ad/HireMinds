@@ -15,7 +15,7 @@ import { DatetimePickerDirective } from '../../shared/directives/datetime-picker
 export class InterviewsComponent implements OnInit {
   loading = signal(true);
   interviews = signal<Interview[]>([]);
-  activeTab = signal<'active' | 'past'>('active');
+  activeTab = signal<'active' | 'past' | 'postponed' | 'cancelled'>('active');
 
   // Modal state
   showModal = signal(false);
@@ -28,10 +28,39 @@ export class InterviewsComponent implements OnInit {
   success = signal('');
 
   // Computed
-  activeInterviews = computed(() => this.interviews().filter(i => ['pending', 'sent'].includes(i.status.toLowerCase())));
-  pastInterviews = computed(() => this.interviews().filter(i => ['cancelled', 'postponed', 'accepted', 'rejected', 'failed'].includes(i.status.toLowerCase())));
-  
-  displayInterviews = computed(() => this.activeTab() === 'active' ? this.activeInterviews() : this.pastInterviews());
+  activeInterviews = computed(() => this.interviews().filter(i => {
+    const s = i.status.toLowerCase();
+    if (!['pending', 'sent', 'accepted'].includes(s)) return false;
+    const slots = this.getParsedSlots(i.proposed_slots);
+    const now = new Date();
+    // Active if at least one slot is in the future
+    return slots.length === 0 || slots.some(slot => new Date(slot) >= now);
+  }));
+
+  pastInterviews = computed(() => this.interviews().filter(i => {
+    const s = i.status.toLowerCase();
+    if (['rejected', 'failed'].includes(s)) return true;
+    if (['pending', 'sent', 'accepted'].includes(s)) {
+      const slots = this.getParsedSlots(i.proposed_slots);
+      const now = new Date();
+      // Past if all slots are in the past
+      return slots.length > 0 && slots.every(slot => new Date(slot) < now);
+    }
+    return false;
+  }));
+
+  postponedInterviews = computed(() => this.interviews().filter(i => i.status.toLowerCase() === 'postponed'));
+  cancelledInterviews = computed(() => this.interviews().filter(i => i.status.toLowerCase() === 'cancelled'));
+
+  displayInterviews = computed(() => {
+    switch (this.activeTab()) {
+      case 'active': return this.activeInterviews();
+      case 'past': return this.pastInterviews();
+      case 'postponed': return this.postponedInterviews();
+      case 'cancelled': return this.cancelledInterviews();
+      default: return this.activeInterviews();
+    }
+  });
 
   constructor(private interviewService: InterviewService) {}
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -11,7 +11,14 @@ import { AuthService } from '../../core/auth/auth.service';
   styleUrl: './about.component.scss'
 })
 export class AboutComponent {
-  constructor(public auth: AuthService) {}
+  constructor(public auth: AuthService, private el: ElementRef) {}
+
+  @HostListener('mousemove', ['$event'])
+  onMouseMove(event: MouseEvent) {
+    const { clientX, clientY } = event;
+    this.el.nativeElement.style.setProperty('--mouse-x', `${clientX}px`);
+    this.el.nativeElement.style.setProperty('--mouse-y', `${clientY}px`);
+  }
 
   steps = [
     { icon: 'upload_file',    title: 'Upload JD',       desc: 'Paste or upload your job description PDF' },

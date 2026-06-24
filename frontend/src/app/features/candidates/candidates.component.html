@@ -71,66 +71,78 @@
     </div>
 
     <div class="candidate-list">
-      <div class="candidate-card" *ngFor="let match of displayCandidates()">
+      <div class="candidate-card" *ngFor="let match of displayCandidates()" [class.expanded]="expandedCandidateId() === match.candidate_id">
         <!-- Left: Avatar -->
-        <div class="candidate-card__avatar" [class]="'avatar--' + getScoreClass(match.overall_score)">
+        <div class="candidate-card__avatar" [class]="'avatar--' + getScoreClass(match.overall_score)" (click)="toggleExpand(match.candidate_id)" style="cursor: pointer;">
           {{ getInitials(match.name) }}
         </div>
 
         <!-- Center: Info -->
         <div class="candidate-card__info">
-          <div class="candidate-card__name-row">
+          <div class="candidate-card__name-row" (click)="toggleExpand(match.candidate_id)" style="cursor: pointer;">
             <span class="candidate-card__name">{{ match.name || 'Unknown Candidate' }}</span>
             <span class="pill pill-success" *ngIf="match.overall_score >= 0.80">✓ Shortlisted</span>
-            <button class="btn btn-ghost" style="margin-left: auto; font-size: 0.8rem; padding: 0.25rem 0.6rem;" (click)="openSlotPicker(match.candidate_id)">
+            
+            <div style="flex: 1;"></div>
+
+            <!-- Match Score Always Visible -->
+            <span class="score-label" [class]="'score--' + getScoreClass(match.overall_score)" style="margin-right: 1rem;">
+              {{ toPercent(match.overall_score) }}% Match
+            </span>
+
+            <button class="btn btn-ghost" *ngIf="match.overall_score < 0.80" style="font-size: 0.8rem; padding: 0.25rem 0.6rem;" (click)="openSlotPicker(match.candidate_id); $event.stopPropagation()">
               <span class="material-symbols-rounded" style="font-size: 1rem;">calendar_month</span> Schedule
             </button>
-          </div>
-          <span class="candidate-card__email">{{ match.email || '—' }}</span>
-
-          <!-- Score Bar -->
-          <div class="score-bar-row">
-            <div class="score-bar" style="flex: 1;">
-              <div
-                class="score-bar__fill"
-                [class]="getScoreClass(match.overall_score)"
-                [style.width.%]="toPercent(match.overall_score)"
-              ></div>
-            </div>
-            <span class="score-label" [class]="'score--' + getScoreClass(match.overall_score)">
-              {{ toPercent(match.overall_score) }}%
-            </span>
+            <span class="material-symbols-rounded text-muted" style="margin-left: 0.5rem; transition: transform 0.2s;" [style.transform]="expandedCandidateId() === match.candidate_id ? 'rotate(180deg)' : 'none'">expand_more</span>
           </div>
 
-          <!-- Skills -->
-          <div class="candidate-card__skills" *ngIf="getSkills(match).length">
-            <span class="pill pill-muted" *ngFor="let skill of getSkills(match).slice(0, 5)">
-              {{ skill }}
-            </span>
-            <span class="pill pill-muted" *ngIf="getSkills(match).length > 5">
-              +{{ getSkills(match).length - 5 }} more
-            </span>
-          </div>
+          <ng-container *ngIf="expandedCandidateId() === match.candidate_id">
+            <span class="candidate-card__email" style="margin-top: 0.5rem; display: block;">{{ match.email || '—' }}</span>
 
-          <!-- Sub-scores -->
-          <div class="sub-scores">
-            <div class="sub-score">
-              <span class="sub-score__label">Skills</span>
-              <span class="sub-score__val">{{ toPercent(match.skill_score) }}%</span>
+            <!-- Score Bar -->
+            <div class="score-bar-row">
+              <div class="score-bar" style="flex: 1;">
+                <div
+                  class="score-bar__fill"
+                  [class]="getScoreClass(match.overall_score)"
+                  [style.width.%]="toPercent(match.overall_score)"
+                ></div>
+              </div>
+              <span class="score-label" [class]="'score--' + getScoreClass(match.overall_score)">
+                {{ toPercent(match.overall_score) }}%
+              </span>
             </div>
-            <div class="sub-score">
-              <span class="sub-score__label">Experience</span>
-              <span class="sub-score__val">{{ toPercent(match.experience_score) }}%</span>
+
+            <!-- Skills -->
+            <div class="candidate-card__skills" *ngIf="getSkills(match).length">
+              <span class="pill pill-muted" *ngFor="let skill of getSkills(match).slice(0, 5)">
+                {{ skill }}
+              </span>
+              <span class="pill pill-muted" *ngIf="getSkills(match).length > 5">
+                +{{ getSkills(match).length - 5 }} more
+              </span>
             </div>
-            <div class="sub-score">
-              <span class="sub-score__label">Education</span>
-              <span class="sub-score__val">{{ toPercent(match.education_score) }}%</span>
+
+            <!-- Sub-scores -->
+            <div class="sub-scores">
+              <div class="sub-score">
+                <span class="sub-score__label">Skills</span>
+                <span class="sub-score__val">{{ toPercent(match.skill_score) }}%</span>
+              </div>
+              <div class="sub-score">
+                <span class="sub-score__label">Experience</span>
+                <span class="sub-score__val">{{ toPercent(match.experience_score) }}%</span>
+              </div>
+              <div class="sub-score">
+                <span class="sub-score__label">Education</span>
+                <span class="sub-score__val">{{ toPercent(match.education_score) }}%</span>
+              </div>
+              <div class="sub-score">
+                <span class="sub-score__label">Keywords</span>
+                <span class="sub-score__val">{{ toPercent(match.keyword_score) }}%</span>
+              </div>
             </div>
-            <div class="sub-score">
-              <span class="sub-score__label">Keywords</span>
-              <span class="sub-score__val">{{ toPercent(match.keyword_score) }}%</span>
-            </div>
-          </div>
+          </ng-container>
         </div>
       </div>
     </div>
@@ -144,20 +156,12 @@
 </div>
 
 <!-- ── Sticky Bottom Action Bar ─────── -->
-<div class="sticky-bar" *ngIf="(activeTab() === 'shortlisted' && shortlisted().length > 0 && !loading()) || showSlotPicker()">
-  <div class="sticky-bar__info" *ngIf="!selectedCandidateId()">
-    <span class="material-symbols-rounded">verified</span>
-    <span>{{ shortlisted().length }} candidate{{ shortlisted().length !== 1 ? 's' : '' }} shortlisted (≥80% match)</span>
-  </div>
+<!-- ── Sticky Bottom Action Bar ─────── -->
+<div class="sticky-bar" *ngIf="showSlotPicker()">
   <div class="sticky-bar__info" *ngIf="selectedCandidateId()">
     <span class="material-symbols-rounded">person</span>
     <span>Scheduling interview for selected candidate</span>
   </div>
-
-  <button class="btn btn-primary btn-lg" *ngIf="!selectedCandidateId()" (click)="openSlotPicker()">
-    <span class="material-symbols-rounded">calendar_month</span>
-    Schedule Interviews for Shortlisted
-  </button>
 </div>
 
 <!-- ── Schedule Interview Modal (Right Panel) ─────── -->
@@ -172,7 +176,6 @@
     
     <div class="modal-panel__body">
       <p class="text-muted mb-4" *ngIf="selectedCandidateId()">Scheduling interview for the selected candidate.</p>
-      <p class="text-muted mb-4" *ngIf="!selectedCandidateId()">Scheduling interviews for all shortlisted candidates (≥80% match).</p>
 
       <p class="form-label">Proposed interview slots (at least one required)</p>
       <div class="slot-inputs">

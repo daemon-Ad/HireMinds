@@ -27,6 +27,16 @@
       Past Interviews
       <span class="tab__badge" *ngIf="pastInterviews().length">{{ pastInterviews().length }}</span>
     </button>
+    <button class="tab" [class.active]="activeTab() === 'postponed'" (click)="activeTab.set('postponed')">
+      <span class="material-symbols-rounded">update</span>
+      Postponed
+      <span class="tab__badge" *ngIf="postponedInterviews().length">{{ postponedInterviews().length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'cancelled'" (click)="activeTab.set('cancelled')">
+      <span class="material-symbols-rounded">cancel</span>
+      Cancelled
+      <span class="tab__badge" *ngIf="cancelledInterviews().length">{{ cancelledInterviews().length }}</span>
+    </button>
   </div>
 
   <div *ngIf="!loading(); else skeleton">
@@ -44,7 +54,7 @@
             <th>Status</th>
             <th>Date Sent</th>
             <th>Proposed Slots</th>
-            <th *ngIf="activeTab() === 'active'">Actions</th>
+            <th *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -64,13 +74,18 @@
                 </span>
               </div>
             </td>
-            <td *ngIf="activeTab() === 'active'">
-              <div class="action-buttons">
+            <td *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">
+              <div class="action-buttons" *ngIf="activeTab() === 'active'">
                 <button class="btn btn-outline-primary btn-sm" (click)="openModal(interview, 'postpone')">
                   Postpone
                 </button>
                 <button class="btn btn-outline-danger btn-sm" (click)="openModal(interview, 'cancel')">
                   Cancel
+                </button>
+              </div>
+              <div class="action-buttons" *ngIf="activeTab() === 'postponed'">
+                <button class="btn btn-outline-primary btn-sm" (click)="openModal(interview, 'postpone')">
+                  Schedule
                 </button>
               </div>
             </td>
@@ -90,7 +105,7 @@
             <th>Status</th>
             <th>Date Sent</th>
             <th>Proposed Slots</th>
-            <th *ngIf="activeTab() === 'active'">Actions</th>
+            <th *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -100,7 +115,7 @@
             <td><div class="skeleton-text" style="width: 80px;"></div></td>
             <td><div class="skeleton-text" style="width: 100px;"></div></td>
             <td><div class="skeleton-text" style="width: 150px;"></div></td>
-            <td *ngIf="activeTab() === 'active'"><div class="skeleton-text" style="width: 120px;"></div></td>
+            <td *ngIf="activeTab() === 'active' || activeTab() === 'postponed'"><div class="skeleton-text" style="width: 120px;"></div></td>
           </tr>
         </tbody>
       </table>

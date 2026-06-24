@@ -2,6 +2,16 @@
   min-height: 100vh;
   background: var(--bg-base);
   color: var(--text-primary);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.05), transparent 40%);
+    z-index: 100;
+  }
 }
 
 // ── Nav ──────────────────────────────────────────────────────
