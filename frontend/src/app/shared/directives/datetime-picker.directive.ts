@@ -1,9 +1,7 @@
 import { Directive, ElementRef, forwardRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import * as flatpickrModule from 'flatpickr';
+import flatpickr from 'flatpickr';
 import { Instance } from 'flatpickr/dist/types/instance';
-
-const flatpickr = (flatpickrModule as any).default || flatpickrModule;
 
 @Directive({
   selector: '[appDatetimePicker]',

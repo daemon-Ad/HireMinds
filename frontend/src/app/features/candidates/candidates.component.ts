@@ -11,7 +11,7 @@ import { DatetimePickerDirective } from '../../shared/directives/datetime-picker
 @Component({
   selector: 'app-candidates',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, DatetimePickerDirective],
   templateUrl: './candidates.component.html',
   styleUrl: './candidates.component.scss'
 })
