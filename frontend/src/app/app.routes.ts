@@ -4,6 +4,10 @@ import { authGuard } from './core/auth/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'about', pathMatch: 'full' },
   {
+    path: 'offline',
+    loadComponent: () => import('./features/service-unavailable/service-unavailable.component').then(m => m.ServiceUnavailableComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
   },

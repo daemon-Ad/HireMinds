@@ -1,0 +1,21 @@
+<div class="offline-page">
+  <div class="offline-card">
+    <div class="offline-icon">
+      <span class="material-symbols-rounded">cloud_off</span>
+    </div>
+    <h1 class="offline-title">Service Unavailable</h1>
+    <p class="offline-desc">
+      We're having trouble connecting to the HireMinds platform servers.
+      The service might be temporarily offline for maintenance or there could be a network issue on our end.
+    </p>
+    <p class="offline-desc">
+      We'll fix it soon!
+    </p>
+    <div class="offline-actions">
+      <button class="btn btn-primary" (click)="retryConnection()">
+        <span class="material-symbols-rounded" style="font-size: 1.2rem; margin-right: 0.5rem;">refresh</span>
+        Retry Connection
+      </button>
+    </div>
+  </div>
+</div>
