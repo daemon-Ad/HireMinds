@@ -4,7 +4,7 @@
   <p><strong>Intelligent, autonomous recruitment powered by Large Language Models.</strong></p>
 
   <a href="https://multi-agent-ai-recruitment-platform.pages.dev">
-    <img src="https://img.shields.io/badge/Live_Website-hireminds.pages.dev-00E5FF?style=for-the-badge&logo=cloudflare" alt="Live Website" />
+    <img src="https://img.shields.io/badge/Live_Website-hireminds-00E5FF?style=for-the-badge&logo=cloudflare" alt="Live Website" />
   </a>
   <a href="https://github.com/daemon-Ad/Multi-Agent-AI-Recruitment-Platform">
     <img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repo" />
