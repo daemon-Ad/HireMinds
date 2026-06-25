@@ -3,10 +3,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { TokenResponse, RegisterRequest } from '../models/models.interface';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = 'http://localhost:8000';
+  private readonly API = `${environment.apiUrl}`;
   private readonly TOKEN_KEY = 'recruit_ai_token';
 
   // Reactive auth state using Signals

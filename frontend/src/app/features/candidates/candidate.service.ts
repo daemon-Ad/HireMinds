@@ -3,9 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CandidateMatch } from '../../core/models/models.interface';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class CandidateService {
-  private readonly API = 'http://localhost:8000';
+  private readonly API = `${environment.apiUrl}`;
 
   constructor(private http: HttpClient) {}
 
