@@ -99,7 +99,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Text files (including combined files)
 *.txt
+!requirements.txt
 
 backend/tests/
