@@ -23,7 +23,7 @@
 
 The **Multi-Agent AI Recruitment Platform** entirely streamlines the hiring process by intelligently parsing Job Descriptions and Candidate CVs, computing comprehensive Match Scores, and fully automating personalized interview scheduling using state-of-the-art Large Language Models (LLMs).
 
-**Visit the live platform:** [https://hireminds.pages.dev](https://hireminds.pages.dev)
+**Visit the live platform:** [https://multi-agent-ai-recruitment-platform.pages.dev/](https://multi-agent-ai-recruitment-platform.pages.dev/)
 
 ---
 
