@@ -3,7 +3,7 @@
   <h1>HireMinds: Multi-Agent AI Recruitment Platform</h1>
   <p><strong>Intelligent, autonomous recruitment powered by Large Language Models.</strong></p>
 
-  <a href="https://hireminds.pages.dev">
+  <a href="https://multi-agent-ai-recruitment-platform.pages.dev">
     <img src="https://img.shields.io/badge/Live_Website-hireminds.pages.dev-00E5FF?style=for-the-badge&logo=cloudflare" alt="Live Website" />
   </a>
   <a href="https://github.com/daemon-Ad/Multi-Agent-AI-Recruitment-Platform">
