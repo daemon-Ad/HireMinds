@@ -3,9 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { JobDescription, JDCreateRequest, JDListResponse } from '../../core/models/models.interface';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class JdService {
-  private readonly API = 'http://localhost:8000/jd';
+  private readonly API = `${environment.apiUrl}/jd`;
 
   constructor(private http: HttpClient) {}
 
