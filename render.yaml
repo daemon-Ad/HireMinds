@@ -4,8 +4,10 @@ services:
     env: python
     plan: free
     rootDir: backend
-    buildCommand: if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install -r backend/requirements.txt; fi
-    startCommand: if [ -d backend ]; then cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT; else uvicorn app.main:app --host 0.0.0.0 --port $PORT; fi
+    #buildCommand: if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install -r backend/requirements.txt; fi
+    #startCommand: if [ -d backend ]; then cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT; else uvicorn app.main:app --host 0.0.0.0 --port $PORT; fi
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
         sync: false
