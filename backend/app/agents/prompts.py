@@ -11,11 +11,23 @@ You must respond with valid JSON only — no prose, no markdown fences.
 """
 
 JD_SUMMARIZER_USER = """\
-Analyze the job description below and return a JSON object with exactly these fields:
-- required_skills   : list of strings — hard skills explicitly required
-- min_experience_years : integer — minimum years of experience required (0 if unspecified)
-- required_education : string — minimum education level (e.g. "Bachelor's", "Master's", "None")
-- responsibilities  : list of strings — key responsibilities of the role
+Analyze the job description below and return a JSON object with exactly these four fields:
+
+- required_skills   : list of strings — every hard/technical skill required or preferred.
+                      Normalize names (e.g. "JS" → "JavaScript", "Postgres" → "PostgreSQL").
+                      Include inferred skills (e.g. "build REST APIs" → add "REST APIs").
+                      Return [] if no skills are mentioned.
+
+- min_experience_years : integer — the MINIMUM years of professional experience required.
+                         Use 0 if not specified. Must be a plain integer, never a string.
+
+- required_education : string — the minimum education level required.
+                       Must be EXACTLY one of: "PhD", "Master's", "Bachelor's", "Diploma",
+                       "High School", or "None". Use "None" if unspecified.
+
+- responsibilities  : list of up to 6 strings — the key job responsibilities.
+                      Each string should be a concise, standalone sentence.
+                      Return [] if none can be identified.
 
 Job Title: {title}
 

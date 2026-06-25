@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel
@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 class InterviewTriggerRequest(BaseModel):
     jd_id: UUID
+    proposed_slots: List[str] = []     # e.g. ["2026-07-01 10:00 AM", "2026-07-02 2:00 PM"]
 
 
 class InterviewResponse(BaseModel):

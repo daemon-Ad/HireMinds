@@ -1,79 +1,168 @@
-import re
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import List
 
-from app.utils.skills_vocab import match_skills
+from app.agents.prompts import JD_SUMMARIZER_SYSTEM, JD_SUMMARIZER_USER
+from app.utils.json_validator import parse_llm_response
 
 logger = logging.getLogger(__name__)
 
-# ── Compiled patterns (module-level, not inside functions) ─────────────────────
+MAX_RETRIES = 3
 
-# Experience: "3+ years of experience", "minimum 2 years", "at least 5 years"
+# ── Valid education values (must match MatchingEngineAgent's EDUCATION_RANK keys) ─
+_VALID_EDUCATION = {"PhD", "Master's", "Bachelor's", "Diploma", "High School", "None"}
+
+# ── Fallback regex patterns (used only if LLM fails entirely) ─────────────────
 _EXP_PATTERNS = [
     re.compile(r'(\d+)\+?\s*years?\s+of\s+experience', re.IGNORECASE),
     re.compile(r'(\d+)\+?\s*years?\s+experience', re.IGNORECASE),
-    re.compile(r'experience\s+of\s+(\d+)\+?\s*years?', re.IGNORECASE),
     re.compile(r'minimum\s+(\d+)\s+years?', re.IGNORECASE),
     re.compile(r'at\s+least\s+(\d+)\s+years?', re.IGNORECASE),
 ]
-
-# Education: ordered highest to lowest so first match wins
 _EDU_PATTERNS = [
     (re.compile(r'\bphd\b|\bdoctorate\b', re.IGNORECASE), "PhD"),
-    (re.compile(r"\bmaster[s']?\b|\bm\.sc\b|\bmba\b|\bm\.s\b", re.IGNORECASE), "Master's"),
-    (re.compile(r"\bbachelor[s']?\b|\bb\.sc\b|\bb\.tech\b|\bbeng\b|\bb\.s\b|\bb\.e\b", re.IGNORECASE), "Bachelor's"),
+    (re.compile(r"\bmaster[s']?\b|\bm\.sc\b|\bmba\b", re.IGNORECASE), "Master's"),
+    (re.compile(r"\bbachelor[s']?\b|\bb\.sc\b|\bb\.tech\b|\bb\.e\b", re.IGNORECASE), "Bachelor's"),
     (re.compile(r'\bdiploma\b', re.IGNORECASE), "Diploma"),
-    (re.compile(r'\bhigh\s+school\b|\bsecondary\b', re.IGNORECASE), "High School"),
+    (re.compile(r'\bhigh\s+school\b', re.IGNORECASE), "High School"),
 ]
-
-# Responsibility section headers
-_RESP_HEADER = re.compile(
-    r'(?i)(responsibilit|you\s+will|what\s+you.{0,4}ll\s+do|your\s+role|'
-    r'duties|key\s+tasks|what\s+we\s+expect|job\s+duties|what\s+you.{0,4}ll\s+be\s+doing)',
-)
-
-# Bullet point lines
-_BULLET = re.compile(r'(?m)^[\s]*[-•*▪▸]\s*(.+)$')
-
-# Action verbs that indicate a responsibility sentence
-_ACTION_VERBS = re.compile(
-    r'\b(develop|design|build|manage|lead|coordinate|implement|maintain|create|'
-    r'analys|analyz|ensure|oversee|collaborat|support|deliver|conduct|establish|'
-    r'monitor|review|assist|prepare|provide|improve|drive|execute|deploy)\b',
-    re.IGNORECASE,
-)
 
 
 @dataclass
 class ParsedJD:
-    required_skills: List[str] = field(default_factory=list)
-    min_experience_years: int = 0
-    required_education: str = "None"
-    responsibilities: List[str] = field(default_factory=list)
+    """
+    The data contract between JDSummarizerAgent and every downstream consumer.
+
+    Fields
+    ------
+    required_skills      : list[str]  — normalized skill names (e.g. "JavaScript")
+    min_experience_years : int        — minimum years required (0 = unspecified)
+    required_education   : str        — one of the keys in MatchingEngineAgent.EDUCATION_RANK
+    responsibilities     : list[str]  — up to 6 key responsibility strings
+
+    IMPORTANT: Do not rename or retype these fields.
+    They are read by:
+      - jd_service.py        (json.dumps each field into the DB)
+      - matching_service.py  (_orm_to_parsed_jd rebuilds this dataclass from the DB)
+      - matching_engine.py   (MatchingEngineAgent.run consumes this dataclass)
+    """
+    required_skills:      List[str] = field(default_factory=list)
+    min_experience_years: int       = 0
+    required_education:   str       = "None"
+    responsibilities:     List[str] = field(default_factory=list)
 
 
 class JDSummarizerAgent:
     """
-    Extracts structured fields from free-form job description prose.
-    Fully local — no LLM calls.
-    Designed for the Kaggle 'Job Title and Job Description' dataset
-    which has two columns: Job Title and Job Description (raw prose, no
-    guaranteed section headers).
+    Extracts structured fields from free-form job description text via Groq LLaMA.
+
+    Why LLM instead of regex/vocabulary?
+    - JDs use varied language, synonyms, and implicit requirements that a fixed
+      vocabulary list cannot reliably capture.
+    - Runs once per JD upload (low volume), so latency is acceptable.
+    - Only this agent and InterviewSchedulerAgent use an LLM; all other agents
+      (CV parser, matching engine) remain fully local.
+
+    Fallback: if the LLM is unavailable or returns unparseable output after
+    MAX_RETRIES attempts, a regex-based extractor is used so the system never
+    crashes on JD upload.
     """
 
     def run(self, title: str, raw_text: str) -> ParsedJD:
-        # STEP 1 — Extract skills via vocabulary matching
-        required_skills = self._extract_skills(raw_text)
+        prompt = JD_SUMMARIZER_USER.format(title=title, raw_text=raw_text)
 
-        # STEP 2 — Extract minimum experience years
-        min_experience_years = self._extract_experience(raw_text)
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                raw_response = self._call_llm(
+                    system=JD_SUMMARIZER_SYSTEM,
+                    user=prompt,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "JDSummarizerAgent: LLM call attempt %d/%d failed — %s",
+                    attempt, MAX_RETRIES, exc,
+                )
+                continue
 
-        # STEP 3 — Extract required education
-        required_education = self._extract_education(raw_text)
+            data = parse_llm_response(raw_response)
+            if data is None:
+                logger.warning(
+                    "JDSummarizerAgent: attempt %d/%d — parse_llm_response returned None",
+                    attempt, MAX_RETRIES,
+                )
+                continue
 
-        # STEP 4 — Extract responsibilities
-        responsibilities = self._extract_responsibilities(raw_text)
+            parsed = self._build_parsed_jd(data)
+            logger.info(
+                "JDSummarizerAgent: extracted %d skills, %d years exp, edu=%s, %d responsibilities",
+                len(parsed.required_skills),
+                parsed.min_experience_years,
+                parsed.required_education,
+                len(parsed.responsibilities),
+            )
+            return parsed
+
+        # All LLM attempts exhausted — fall back to regex so upload never fails
+        logger.error(
+            "JDSummarizerAgent: all %d LLM attempts failed, using regex fallback.",
+            MAX_RETRIES,
+        )
+        return self._regex_fallback(raw_text)
+
+    # ── Private helpers ────────────────────────────────────────────────────────
+
+    def _call_llm(self, system: str, user: str) -> str:
+        """
+        Calls Groq's LLaMA model. Instantiated here (not at class init) so the
+        import only happens when actually called — keeping unit tests fast and
+        the agent importable without GROQ_API_KEY being set.
+        """
+        from groq import Groq
+        from app.config import settings
+
+        client = Groq(api_key=settings.GROQ_API_KEY)
+        response = client.chat.completions.create(
+            model=settings.GROQ_MODEL,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user",   "content": user},
+            ],
+            temperature=0.0,    # deterministic — we want consistent structured output
+            max_tokens=1024,
+        )
+        return response.choices[0].message.content
+
+    def _build_parsed_jd(self, data: dict) -> ParsedJD:
+        """
+        Safely converts the raw LLM dict into a ParsedJD, coercing types
+        where the model may have returned a slightly wrong format.
+        """
+        # required_skills: must be list[str]
+        raw_skills = data.get("required_skills", [])
+        if isinstance(raw_skills, list):
+            required_skills = [str(s).strip() for s in raw_skills if s]
+        else:
+            required_skills = []
+
+        # min_experience_years: must be int; LLM sometimes returns "3" or 3.0
+        raw_exp = data.get("min_experience_years", 0)
+        try:
+            min_experience_years = int(float(str(raw_exp)))
+        except (ValueError, TypeError):
+            min_experience_years = 0
+        min_experience_years = max(0, min_experience_years)  # no negatives
+
+        # required_education: must be one of the valid strings
+        raw_edu = str(data.get("required_education", "None")).strip()
+        required_education = raw_edu if raw_edu in _VALID_EDUCATION else "None"
+
+        # responsibilities: must be list[str]
+        raw_resp = data.get("responsibilities", [])
+        if isinstance(raw_resp, list):
+            responsibilities = [str(r).strip() for r in raw_resp if r][:6]
+        else:
+            responsibilities = []
 
         return ParsedJD(
             required_skills=required_skills,
@@ -82,65 +171,32 @@ class JDSummarizerAgent:
             responsibilities=responsibilities,
         )
 
-    # ── Private extraction methods ─────────────────────────────────────────────
-
-    def _extract_skills(self, text: str) -> List[str]:
-        """Vocabulary matching against skills_vocabulary.txt."""
-        matched = match_skills(text)
-        return sorted(set(matched))
-
-    def _extract_experience(self, text: str) -> int:
+    def _regex_fallback(self, raw_text: str) -> ParsedJD:
         """
-        Try all experience patterns; collect all numeric matches and
-        return the maximum value found. Returns 0 if nothing matched.
+        Minimal regex-based extractor used only when Groq is completely
+        unavailable. Returns a best-effort ParsedJD so the upload endpoint
+        never returns a 500 error.
         """
-        all_values = []
+        # Experience
+        exp_values = []
         for pattern in _EXP_PATTERNS:
-            for m in pattern.finditer(text):
+            for m in pattern.finditer(raw_text):
                 try:
-                    all_values.append(int(m.group(1)))
+                    exp_values.append(int(m.group(1)))
                 except (ValueError, IndexError):
                     pass
-        return max(all_values) if all_values else 0
+        min_experience_years = max(exp_values) if exp_values else 0
 
-    def _extract_education(self, text: str) -> str:
-        """
-        Scan for education keywords in priority order (highest degree first).
-        Returns the first match found, or "None" if nothing matched.
-        """
+        # Education
+        required_education = "None"
         for pattern, label in _EDU_PATTERNS:
-            if pattern.search(text):
-                return label
-        return "None"
+            if pattern.search(raw_text):
+                required_education = label
+                break
 
-    def _extract_responsibilities(self, text: str) -> List[str]:
-        """
-        Two-strategy extraction:
-        1. If a known responsibilities header is found, extract bullet
-           points (or sentences) from the text that follows it.
-        2. If no header found, scan full text for action-verb sentences.
-        Returns up to 5 responsibility strings.
-        """
-        header_match = _RESP_HEADER.search(text)
-
-        if header_match:
-            # Take up to 1200 chars after the header
-            after_header = text[header_match.end(): header_match.end() + 1200]
-
-            # Try bullet extraction first
-            bullets = _BULLET.findall(after_header)
-            if bullets:
-                return [b.strip() for b in bullets[:5] if b.strip()]
-
-            # Fall back to sentence splitting within that block
-            sentences = re.split(r'(?<=[.!?])\s+', after_header)
-            cleaned = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 20]
-            return cleaned[:5]
-
-        # No header found — scan full text for action-verb sentences
-        sentences = re.split(r'(?<=[.!?])\s+', text)
-        action_sentences = [
-            s.strip() for s in sentences
-            if s.strip() and _ACTION_VERBS.search(s) and len(s.strip()) > 20
-        ]
-        return action_sentences[:5]
+        return ParsedJD(
+            required_skills=[],
+            min_experience_years=min_experience_years,
+            required_education=required_education,
+            responsibilities=[],
+        )

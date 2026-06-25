@@ -22,6 +22,16 @@ def get_all(db: Session) -> List[Interview]:
     return db.query(Interview).all()
 
 
+def get_by_recruiter_id(db: Session, recruiter_id: UUID) -> List[Interview]:
+    """Return all interviews belonging to the given recruiter, newest first."""
+    return (
+        db.query(Interview)
+        .filter(Interview.recruiter_id == recruiter_id)
+        .order_by(Interview.sent_at.desc())
+        .all()
+    )
+
+
 def create_or_update(
     db: Session,
     match_id: UUID,

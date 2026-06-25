@@ -1,8 +1,10 @@
 import json
+from typing import List
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
+from app.config import settings
 from app.schemas.match import MatchResponse, ShortlistResponse
 from app.db.repositories import candidate_repo, jd_repo, match_repo
 from app.agents.matching_engine import MatchingEngineAgent
@@ -104,36 +106,31 @@ def run_match(db: Session, candidate_id: UUID, jd_id: UUID) -> MatchResponse:
     return MatchResponse.model_validate(match)
 
 
-def get_matches(db: Session, jd_id: UUID) -> ShortlistResponse:
+def get_matches_for_jd(
+    db: Session, jd_id: UUID, recruiter_id: UUID
+) -> List[MatchResponse]:
+    """Return all match records for a JD, ordered by overall_score DESC."""
     jd = jd_repo.get_by_id(db=db, jd_id=jd_id)
-    if not jd:
+    if not jd or jd.recruiter_id != recruiter_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job description {jd_id} not found.",
         )
 
     matches = match_repo.get_by_jd_id(db=db, jd_id=jd_id)
-    return ShortlistResponse(
-        jd_id=jd_id,
-        threshold=0.0,
-        matches=[MatchResponse.model_validate(m) for m in matches],
-        total=len(matches),
-    )
+    return [MatchResponse.model_validate(m) for m in matches]
 
 
-def get_shortlisted(db: Session, jd_id: UUID) -> ShortlistResponse:
-    from app.config import settings
+def get_shortlisted(
+    db: Session, jd_id: UUID, recruiter_id: UUID
+) -> List[MatchResponse]:
+    """Return only shortlisted match records for a JD, ordered by overall_score DESC."""
     jd = jd_repo.get_by_id(db=db, jd_id=jd_id)
-    if not jd:
+    if not jd or jd.recruiter_id != recruiter_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job description {jd_id} not found.",
         )
 
     matches = match_repo.get_shortlisted_by_jd_id(db=db, jd_id=jd_id)
-    return ShortlistResponse(
-        jd_id=jd_id,
-        threshold=settings.MATCH_THRESHOLD,
-        matches=[MatchResponse.model_validate(m) for m in matches],
-        total=len(matches),
-    )
+    return [MatchResponse.model_validate(m) for m in matches]

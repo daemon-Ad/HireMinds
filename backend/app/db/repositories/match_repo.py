@@ -21,6 +21,15 @@ def get_by_jd_id(db: Session, jd_id: UUID) -> List[CandidateJDMatch]:
     )
 
 
+def get_by_recruiter_id(db: Session, recruiter_id: UUID) -> List[CandidateJDMatch]:
+    """Return all match records for a given recruiter, used to list their candidates."""
+    return (
+        db.query(CandidateJDMatch)
+        .filter(CandidateJDMatch.recruiter_id == recruiter_id)
+        .all()
+    )
+
+
 def get_shortlisted_by_jd_id(db: Session, jd_id: UUID) -> List[CandidateJDMatch]:
     return (
         db.query(CandidateJDMatch)

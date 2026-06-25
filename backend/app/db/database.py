@@ -4,7 +4,11 @@ from typing import Generator
 
 from app.config import settings
 from app.models.base import Base
-
+from app.models.recruiter import Recruiter
+from app.models.job_description import JobDescription
+from app.models.candidate import Candidate
+from app.models.match import CandidateJDMatch
+from app.models.interview import Interview
 # ── Engine ─────────────────────────────────────────────────────────────────────
 engine = create_engine(
     settings.DATABASE_URL,
