@@ -65,3 +65,16 @@ def get_jd(db: Session, jd_id: UUID, recruiter_id: UUID) -> JDResponse:
             detail=f"Job description {jd_id} not found.",
         )
     return JDResponse.model_validate(jd)
+
+
+def update_jd_title(db: Session, jd_id: UUID, recruiter_id: UUID, new_title: str) -> JDResponse:
+    jd = jd_repo.get_by_id(db=db, jd_id=jd_id)
+    if not jd or jd.recruiter_id != recruiter_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job description {jd_id} not found.",
+        )
+    jd.title = new_title
+    db.commit()
+    db.refresh(jd)
+    return JDResponse.model_validate(jd)

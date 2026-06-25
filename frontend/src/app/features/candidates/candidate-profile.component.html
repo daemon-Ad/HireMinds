@@ -1,0 +1,87 @@
+<div class="profile-page page-enter">
+  <div class="page-header">
+    <button (click)="goBack()" class="btn btn-ghost btn-back">
+      <span class="material-symbols-rounded">arrow_back</span>
+      Back
+    </button>
+  </div>
+
+  <div class="empty-state error-state" *ngIf="error()">
+    <span class="material-symbols-rounded">error</span>
+    <p>{{ error() }}</p>
+  </div>
+
+  <div class="profile-container" *ngIf="!loading() && candidate(); else skeleton">
+    
+    <!-- Profile Header Card -->
+    <div class="card profile-header-card">
+      <div class="profile-header-card__avatar">
+        {{ getInitials(candidate().name) }}
+      </div>
+      <div class="profile-header-card__info">
+        <h1>{{ candidate().name || 'Unknown Candidate' }}</h1>
+        <div class="contact-info">
+          <span class="contact-item" *ngIf="candidate().email">
+            <span class="material-symbols-rounded">mail</span>
+            {{ candidate().email }}
+          </span>
+          <span class="contact-item" *ngIf="candidate().phone">
+            <span class="material-symbols-rounded">call</span>
+            {{ candidate().phone }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills Card -->
+    <div class="card section-card">
+      <h2>Skills & Tech Stack</h2>
+      <div class="skills-grid" *ngIf="getSkills().length; else noSkills">
+        <span class="skill-text" style="color: white; font-size: 0.9375rem;">{{ getSkills().join(', ') }}</span>
+      </div>
+      <ng-template #noSkills><p class="text-muted">No skills parsed.</p></ng-template>
+    </div>
+
+    <!-- Experience Card -->
+    <div class="card section-card">
+      <h2>Work Experience</h2>
+      <div class="experience-list" *ngIf="getExperience().length; else noExp">
+        <div class="experience-item" *ngFor="let exp of getExperience()">
+          <h3 class="experience-item__title">{{ exp.title || 'Role Unknown' }}</h3>
+          <p class="experience-item__company">{{ exp.company || 'Company Unknown' }}</p>
+          <p class="experience-item__desc">{{ exp.description }}</p>
+        </div>
+      </div>
+      <ng-template #noExp><p class="text-muted">No work experience parsed.</p></ng-template>
+    </div>
+
+    <!-- Education Card -->
+    <div class="card section-card">
+      <h2>Education</h2>
+      <div class="education-list" *ngIf="getEducation().length; else noEdu">
+        <div class="education-item" *ngFor="let edu of getEducation()">
+          <h3 class="education-item__degree">{{ edu.degree || 'Degree Unknown' }}</h3>
+          <p class="education-item__institute">{{ edu.institute || 'Institute Unknown' }}</p>
+          <p class="education-item__year" *ngIf="edu.year">{{ edu.year }}</p>
+        </div>
+      </div>
+      <ng-template #noEdu><p class="text-muted">No education parsed.</p></ng-template>
+    </div>
+
+    <!-- Raw CV Text -->
+    <div class="card section-card">
+      <h2>Raw CV Text</h2>
+      <div class="cv-text">
+        <p>{{ candidate().raw_cv_text || 'No text extracted.' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #skeleton>
+    <div class="profile-container skeleton-container" *ngIf="loading()">
+      <div class="card skeleton" style="height: 120px;"></div>
+      <div class="card skeleton" style="height: 100px;"></div>
+      <div class="card skeleton" style="height: 200px;"></div>
+    </div>
+  </ng-template>
+</div>

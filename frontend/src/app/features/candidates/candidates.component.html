@@ -6,14 +6,32 @@
     <span>{{ jd()?.title || 'Loading…' }}</span>
   </div>
 
-  <div class="page-header">
+  <div class="page-header" *ngIf="jd()">
     <div>
-      <h1>{{ jd()?.title || '&hellip;' }}</h1>
-      <p class="page-subtitle">AI-ranked candidates for this position</p>
+      <div *ngIf="!isEditingTitle()" style="display: flex; align-items: center; gap: 0.5rem;">
+        <h1>{{ jd()?.title }}</h1>
+        <button class="btn btn-ghost btn-sm" (click)="startEditingTitle()" title="Edit JD Name" style="padding: 0.25rem;">
+          <span class="material-symbols-rounded" style="font-size: 1.25rem;">edit</span>
+        </button>
+      </div>
+      
+      <div *ngIf="isEditingTitle()" style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+        <input type="text" [(ngModel)]="editTitleStr" class="form-control" style="font-size: 1.5rem; font-weight: bold; width: 300px;" />
+        <button class="btn btn-primary btn-sm" (click)="saveTitle()" [disabled]="savingTitle()">
+          {{ savingTitle() ? 'Saving...' : 'Save' }}
+        </button>
+        <button class="btn btn-ghost btn-sm" (click)="isEditingTitle.set(false)">Cancel</button>
+      </div>
+
+      <p class="page-subtitle">
+        <span class="pill">{{ jd()?.min_experience_years }}+ Yrs Exp</span>
+        <span class="pill">{{ jd()?.required_education || 'Any Degree' }}</span>
+        <span class="text-muted" style="margin-left: 1rem;">Created {{ jd()?.created_at | date:'mediumDate' }}</span>
+      </p>
     </div>
-    <button class="btn btn-ghost" (click)="showUploadPanel.set(!showUploadPanel())">
-      <span class="material-symbols-rounded">upload_file</span>
-      Upload CV
+    <button class="btn btn-primary" (click)="showUploadPanel.set(!showUploadPanel())">
+      <span class="material-symbols-rounded">{{ showUploadPanel() ? 'close' : 'upload_file' }}</span>
+      {{ showUploadPanel() ? 'Cancel' : 'Upload Candidates CVs' }}
     </button>
   </div>
 
@@ -25,45 +43,89 @@
     <span class="material-symbols-rounded">error</span> {{ error() }}
   </div>
 
-  <!-- CV Upload Panel -->
   <div class="upload-panel" *ngIf="showUploadPanel()">
-    <h3>Upload Candidate CV</h3>
+    <h3>Upload Candidate CVs</h3>
     <div
       class="drop-zone"
-      [class.has-file]="cvFile"
+      [class.has-file]="cvFiles.length > 0"
       (dragover)="$event.preventDefault()"
       (drop)="onDrop($event)"
       (click)="cvInput.click()"
     >
-      <input #cvInput type="file" accept=".pdf" (change)="onFileSelect($event)" hidden />
-      <span class="material-symbols-rounded drop-zone__icon">picture_as_pdf</span>
-      <p *ngIf="!cvFile">Drag & drop a PDF resume or <span class="link">browse</span></p>
-      <p *ngIf="cvFile" class="drop-zone__filename">{{ cvFile.name }}</p>
+      <input #cvInput type="file" accept=".pdf" multiple (change)="onFileSelect($event)" hidden />
+      <span class="material-symbols-rounded drop-zone__icon" *ngIf="!uploading()">picture_as_pdf</span>
+      <span class="material-symbols-rounded drop-zone__icon spinning" *ngIf="uploading()" style="animation: spin 2s linear infinite;">hourglass_top</span>
+      
+      <p *ngIf="cvFiles.length === 0">Drag & drop multiple PDF resumes or <span class="link">browse</span></p>
+      
+      <div *ngIf="cvFiles.length > 0 && !uploading()">
+        <p class="drop-zone__filename">{{ cvFiles.length }} file(s) selected</p>
+        <div style="max-height: 80px; overflow-y: auto; text-align: left; background: var(--bg-elevated); padding: 0.5rem; border-radius: var(--radius-sm); margin-top: 0.5rem;">
+          <div *ngFor="let f of cvFiles" style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            <span class="material-symbols-rounded" style="font-size: 0.9rem; vertical-align: middle;">description</span> {{ f.name }}
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="uploading()">
+        <p class="drop-zone__filename" style="color: var(--primary) !important;">
+          Processing {{ uploadingFilesCount() }} of {{ totalFilesCount() }} files...
+        </p>
+        <p style="font-size: 0.8rem; opacity: 0.8;">Please wait. Our agents are working hard.</p>
+      </div>
     </div>
     <div class="upload-panel__actions">
-      <button class="btn btn-ghost" (click)="showUploadPanel.set(false); cvFile = null">Cancel</button>
-      <button class="btn btn-primary" (click)="uploadCV()" [disabled]="!cvFile || uploading()">
-        {{ uploading() ? 'Uploading & Matching…' : 'Upload & Match' }}
+     <!--<button class="btn btn-ghost" (click)="showUploadPanel.set(false); cvFiles = []" [disabled]="uploading()">Cancel</button> -->
+      <button class="btn btn-primary" (click)="uploadCV()" [disabled]="cvFiles.length === 0 || uploading()">
+        {{ uploading() ? 'Uploading...' : 'Upload & Match' }}
       </button>
     </div>
   </div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab" [class.active]="activeTab() === 'shortlisted'" (click)="activeTab.set('shortlisted')">
-      <span class="material-symbols-rounded">verified</span>
-      Shortlisted
-      <span class="tab__badge tab__badge--green">{{ shortlisted().length }}</span>
-    </button>
-    <button class="tab" [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">
-      <span class="material-symbols-rounded">group</span>
-      All Candidates
-      <span class="tab__badge">{{ allCandidates().length }}</span>
-    </button>
+  <!-- Tabs and Filters -->
+  <div class="controls-bar" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem;">
+    <div class="tabs" style="margin-bottom: 0;">
+      <button class="tab" [class.active]="activeTab() === 'shortlisted'" (click)="activeTab.set('shortlisted')">
+        <span class="material-symbols-rounded">verified</span>
+        Shortlisted
+        <span class="tab__badge tab__badge--green">{{ shortlisted().length }}</span>
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">
+        <span class="material-symbols-rounded">group</span>
+        All Candidates
+        <span class="tab__badge">{{ allCandidates().length }}</span>
+      </button>
+    </div>
+
+    <div class="filters" style="display: flex; gap: 1rem; align-items: center;">
+      <div class="modern-input-wrapper" style="width: 250px;">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" class="form-control" placeholder="Search by name or email..." />
+      </div>
+      
+      <div style="position: relative; display: inline-block;">
+        <button class="btn btn-ghost" (click)="toggleSortDropdown($event)" style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="material-symbols-rounded">sort</span>
+          Sort By: {{ sortBy() === 'score' ? 'Match Score' : 'Upload Time' }}
+          <span class="material-symbols-rounded" style="font-size: 1.2rem;">{{ isSortDropdownOpen() ? 'expand_less' : 'expand_more' }}</span>
+        </button>
+        
+        <div class="custom-dropdown" *ngIf="isSortDropdownOpen()" style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100; min-width: 180px; display: flex; flex-direction: column; padding: 0.5rem 0;" (click)="$event.stopPropagation()">
+          <button class="dropdown-item" style="background: none; border: none; padding: 0.75rem 1rem; text-align: left; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; font-size: 1rem;" (click)="selectSort('score')">
+            Match Score 
+            <span class="material-symbols-rounded text-success" *ngIf="sortBy() === 'score'" style="font-size: 1.2rem;">check</span>
+          </button>
+          <button class="dropdown-item" style="background: none; border: none; padding: 0.75rem 1rem; text-align: left; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-family: inherit; font-size: 1rem;" (click)="selectSort('time')">
+            Upload Time 
+            <span class="material-symbols-rounded text-success" *ngIf="sortBy() === 'time'" style="font-size: 1.2rem;">check</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Candidates List -->
-  <div *ngIf="!loading(); else skeletonCards">
+  <div *ngIf="!loading(); else skeleton">
     <div class="empty-state" *ngIf="displayCandidates().length === 0">
       <span class="material-symbols-rounded">person_search</span>
       <p *ngIf="activeTab() === 'shortlisted'">No candidates above 80% match yet. Upload more CVs!</p>
@@ -142,15 +204,25 @@
                 <span class="sub-score__val">{{ toPercent(match.keyword_score) }}%</span>
               </div>
             </div>
+
+            <!-- Card Actions -->
+            <div class="candidate-card__actions" style="display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1rem;">
+              <a [routerLink]="['/candidate', match.candidate_id]" class="btn btn-ghost btn-sm">
+                View profile
+              </a>
+            </div>
           </ng-container>
         </div>
       </div>
     </div>
+    <div style="text-align: center; padding: 2rem;" *ngIf="displayCandidates().length > 0">
+      <a routerLink="/archive/candidates" style="color: var(--text-muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer;">View full archived data</a>
+    </div>
   </div>
-
-  <ng-template #skeletonCards>
+  
+  <ng-template #skeleton>
     <div class="candidate-list">
-      <div class="candidate-card skeleton-card" *ngFor="let i of [1,2,3]"></div>
+      <div class="candidate-card card skeleton-card" *ngFor="let i of [1,2,3]"></div>
     </div>
   </ng-template>
 </div>

@@ -10,6 +10,10 @@ class JDCreateRequest(BaseModel):
     raw_text: str
 
 
+class JDUpdateRequest(BaseModel):
+    title: Optional[str] = None
+
+
 class JDResponse(BaseModel):
     jd_id: UUID
     recruiter_id: UUID

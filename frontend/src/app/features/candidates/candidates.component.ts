@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, Input } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute, RouterModule } from '@angular/router';
@@ -30,8 +30,18 @@ export class CandidatesComponent implements OnInit {
   selectedCandidateId = signal<string | null>(null);
   expandedCandidateId = signal<string | null>(null);
 
+  // Edit Title
+  isEditingTitle = signal(false);
+  savingTitle = signal(false);
+  editTitleStr = '';
+  
+  // Sort Dropdown
+  isSortDropdownOpen = signal(false);
+
   // CV Upload
-  cvFile: File | null = null;
+  cvFiles: File[] = [];
+  uploadingFilesCount = signal(0);
+  totalFilesCount = signal(0);
 
   // Interview slots
   slots: { datetime: string }[] = [
@@ -40,13 +50,35 @@ export class CandidatesComponent implements OnInit {
     { datetime: '' }
   ];
 
+  searchQuery = signal('');
+  sortBy = signal<'score' | 'time'>('score');
+
   // Computed
   // Scores from backend are 0-1 fractions; shortlist threshold = 0.80
   shortlisted = computed(() => this.candidates().filter(c => c.overall_score >= 0.80));
-  allCandidates = computed(() => this.candidates());
-  displayCandidates = computed(() =>
-    this.activeTab() === 'shortlisted' ? this.shortlisted() : this.allCandidates()
-  );
+  allCandidates = computed(() => this.candidates().filter(c => {
+    const pct = c.overall_score > 1 ? c.overall_score : c.overall_score * 100;
+    return pct >= 45; // Do not show red zone (< 45%) in active lists
+  }));
+  displayCandidates = computed(() => {
+    let list = this.activeTab() === 'shortlisted' ? this.shortlisted() : this.allCandidates();
+    
+    const query = this.searchQuery().trim().toLowerCase();
+    if (query) {
+      list = list.filter(c => 
+        (c.name && c.name.toLowerCase().includes(query)) ||
+        (c.email && c.email.toLowerCase().includes(query))
+      );
+    }
+
+    return [...list].sort((a, b) => {
+      if (this.sortBy() === 'score') {
+        return b.overall_score - a.overall_score;
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    }).slice(0, 100);
+  });
 
   constructor(
     private route: ActivatedRoute,
@@ -62,6 +94,23 @@ export class CandidatesComponent implements OnInit {
     this.loadCandidates();
   }
 
+  @HostListener('document:click')
+  onDocumentClick() {
+    if (this.isSortDropdownOpen()) {
+      this.isSortDropdownOpen.set(false);
+    }
+  }
+
+  toggleSortDropdown(event: Event) {
+    event.stopPropagation();
+    this.isSortDropdownOpen.set(!this.isSortDropdownOpen());
+  }
+
+  selectSort(option: 'score' | 'time') {
+    this.sortBy.set(option);
+    this.isSortDropdownOpen.set(false);
+  }
+
   loadCandidates() {
     this.loading.set(true);
     this.candidateService.getRankedCandidates(this.jdId()).subscribe({
@@ -70,34 +119,67 @@ export class CandidatesComponent implements OnInit {
     });
   }
 
-  onFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files?.[0]) this.cvFile = input.files[0];
+  onFileSelect(event: any) {
+    if (event.target.files?.length) {
+      this.cvFiles = Array.from(event.target.files);
+    }
   }
 
   onDrop(event: DragEvent) {
     event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (file && file.type === 'application/pdf') this.cvFile = file;
+    if (event.dataTransfer?.files?.length) {
+      const files = Array.from(event.dataTransfer.files).filter(f => f.name.endsWith('.pdf'));
+      if (files.length) {
+        this.cvFiles = files;
+      }
+    }
   }
 
-  uploadCV() {
-    if (!this.cvFile) return;
+  async uploadCV() {
+    if (!this.cvFiles.length) return;
+    
     this.uploading.set(true);
+    this.totalFilesCount.set(this.cvFiles.length);
+    this.uploadingFilesCount.set(0);
     this.error.set('');
-    this.candidateService.uploadCV(this.cvFile).subscribe({
-      next: () => {
-        this.success.set('CV uploaded! AI is matching candidates…');
-        this.cvFile = null;
-        this.showUploadPanel.set(false);
-        this.uploading.set(false);
-        setTimeout(() => { this.success.set(''); this.loadCandidates(); }, 2500);
-      },
-      error: (err) => {
-        this.error.set(err.error?.detail || 'Upload failed.');
-        this.uploading.set(false);
+    
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const file of this.cvFiles) {
+      this.uploadingFilesCount.set(this.uploadingFilesCount() + 1);
+      try {
+        await new Promise<void>((resolve, reject) => {
+          this.candidateService.uploadCV(file).subscribe({
+            next: () => {
+              successCount++;
+              resolve();
+            },
+            error: (err) => {
+              failCount++;
+              console.error(err);
+              resolve(); // Resolve anyway to continue with next file
+            }
+          });
+        });
+      } catch (e) {
+        failCount++;
       }
-    });
+    }
+
+    this.uploading.set(false);
+    this.showUploadPanel.set(false);
+    this.cvFiles = [];
+    this.totalFilesCount.set(0);
+    this.uploadingFilesCount.set(0);
+
+    if (successCount > 0) {
+      this.success.set(`Successfully uploaded ${successCount} CV(s).` + (failCount > 0 ? ` Failed: ${failCount}.` : ''));
+      this.loadCandidates();
+      setTimeout(() => this.success.set(''), 4000);
+    } else {
+      this.error.set('Failed to upload CV(s). Please ensure they are valid PDFs.');
+    }
   }
 
   openSlotPicker(candidateId?: string) {
@@ -131,6 +213,29 @@ export class CandidatesComponent implements OnInit {
       error: (err) => {
         this.error.set(err.error?.detail || 'Failed to send interviews.');
         this.sendingInterviews.set(false);
+      }
+    });
+  }
+
+  startEditingTitle() {
+    this.editTitleStr = this.jd()?.title || '';
+    this.isEditingTitle.set(true);
+  }
+
+  saveTitle() {
+    if (!this.editTitleStr.trim()) return;
+    this.savingTitle.set(true);
+    this.jdService.updateJDTitle(this.jdId(), this.editTitleStr.trim()).subscribe({
+      next: (updatedJd) => {
+        this.jd.set(updatedJd);
+        this.isEditingTitle.set(false);
+        this.savingTitle.set(false);
+        this.success.set('JD name updated successfully!');
+        setTimeout(() => this.success.set(''), 3000);
+      },
+      error: (err) => {
+        this.error.set(err.error?.detail || 'Failed to update JD name.');
+        this.savingTitle.set(false);
       }
     });
   }

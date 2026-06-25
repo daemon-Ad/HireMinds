@@ -18,4 +18,12 @@ export class CandidateService {
   getRankedCandidates(jdId: string): Observable<CandidateMatch[]> {
     return this.http.get<CandidateMatch[]>(`${this.API}/candidates/${jdId}`);
   }
+
+  getAllCandidates(): Observable<CandidateMatch[]> {
+    return this.http.get<CandidateMatch[]>(`${this.API}/candidates/`);
+  }
+
+  getCandidateProfile(candidateId: string): Observable<any> {
+    return this.http.get<any>(`${this.API}/candidates/profile/${candidateId}`);
+  }
 }

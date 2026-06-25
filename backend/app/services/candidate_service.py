@@ -31,10 +31,10 @@ def create_candidate(
     parsed = parser.run(raw_cv_text=raw_cv_text)
 
     # Guard: email is required for uniqueness; use a fallback if extraction missed it
-    if not parsed.email:
+    if not parsed.email or parsed.email.lower() == "none" or "@" not in parsed.email:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Could not extract a valid email address from the CV.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file does not appear to be a valid CV (could not extract a valid email address).",
         )
 
     # We no longer enforce email uniqueness, allowing a candidate
@@ -61,7 +61,7 @@ def create_candidate(
     return CandidateResponse.model_validate(candidate)
 
 
-def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateResponse]:
+def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateWithScoreResponse]:
     """
     Return all candidates that have at least one match record against
     this recruiter's JDs — i.e. candidates this recruiter has uploaded CVs for.
@@ -74,8 +74,49 @@ def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateResponse]:
         candidate = match.candidate
         if candidate.candidate_id not in seen:
             seen.add(candidate.candidate_id)
-            candidates.append(CandidateResponse.model_validate(candidate))
+            candidates.append(
+                CandidateWithScoreResponse(
+                    candidate_id=candidate.candidate_id,
+                    name=candidate.name,
+                    email=candidate.email,
+                    phone=candidate.phone,
+                    skills=candidate.skills,
+                    experience_json=candidate.experience_json,
+                    education_json=candidate.education_json,
+                    raw_cv_text=candidate.raw_cv_text,
+                    created_at=candidate.created_at,
+                    overall_score=match.overall_score,
+                    skill_score=match.skill_score,
+                    experience_score=match.experience_score,
+                    education_score=match.education_score,
+                    keyword_score=match.keyword_score,
+                    is_shortlisted=match.is_shortlisted,
+                )
+            )
     return candidates
+
+
+def get_candidate_profile(db: Session, candidate_id: UUID, recruiter_id: UUID) -> CandidateResponse:
+    """
+    Return a candidate's profile if they are associated with the recruiter's JDs.
+    """
+    candidate = candidate_repo.get_by_id(db=db, candidate_id=candidate_id)
+    if not candidate:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Candidate {candidate_id} not found."
+        )
+
+    # Validate that this recruiter has access to this candidate
+    matches = match_repo.get_by_recruiter_id(db=db, recruiter_id=recruiter_id)
+    if not any(match.candidate_id == candidate_id for match in matches):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have access to this candidate."
+        )
+
+    return CandidateResponse.model_validate(candidate)
+
 
 
 def get_ranked_candidates(

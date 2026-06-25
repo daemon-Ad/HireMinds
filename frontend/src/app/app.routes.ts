@@ -4,6 +4,10 @@ import { authGuard } from './core/auth/auth.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'about', pathMatch: 'full' },
   {
+    path: 'offline',
+    loadComponent: () => import('./features/service-unavailable/service-unavailable.component').then(m => m.ServiceUnavailableComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent)
   },
@@ -31,6 +35,38 @@ export const routes: Routes = [
       {
         path: 'interviews',
         loadComponent: () => import('./features/interviews/interviews.component').then(m => m.InterviewsComponent)
+      },
+      {
+        path: 'candidate/:id',
+        loadComponent: () => import('./features/candidates/candidate-profile.component').then(m => m.CandidateProfileComponent)
+      },
+      {
+        path: 'archive/:type',
+        loadComponent: () => import('./features/archive/archive.component').then(m => m.ArchiveComponent)
+      },
+      {
+        path: 'animations/matrix',
+        loadComponent: () => import('./features/animations/matrix-rain.component').then(m => m.MatrixRainComponent)
+      },
+      {
+        path: 'animations/gravity',
+        loadComponent: () => import('./features/animations/gravity-particles.component').then(m => m.GravityParticlesComponent)
+      },
+      {
+        path: 'animations/trails',
+        loadComponent: () => import('./features/animations/mouse-trails.component').then(m => m.MouseTrailsComponent)
+      },
+      {
+        path: 'animations/magnetic',
+        loadComponent: () => import('./features/animations/magnetic-field.component').then(m => m.MagneticFieldComponent)
+      },
+      {
+        path: 'animations/confetti',
+        loadComponent: () => import('./features/animations/confetti-burst.component').then(m => m.ConfettiBurstComponent)
+      },
+      {
+        path: 'api-services',
+        loadComponent: () => import('./features/api-services/api-services.component').then(m => m.ApiServicesComponent)
       }
     ]
   },

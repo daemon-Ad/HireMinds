@@ -1,0 +1,56 @@
+<div class="archive-page" style="padding: 2rem; color: white; background: var(--bg-base); min-height: 100vh;">
+  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+    <button class="btn btn-ghost" (click)="goBack()">← Back</button>
+    <h1 style="text-transform: capitalize;">{{ type() }} Archive</h1>
+  </div>
+
+  <div *ngIf="loading()">Loading data...</div>
+
+  <div *ngIf="!loading() && data().length > 0" style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; background: var(--bg-surface); border-radius: 8px;">
+      <thead style="background: var(--bg-elevated); border-bottom: 1px solid var(--border);">
+        <tr *ngIf="type() === 'jds'">
+          <th style="padding: 1rem; text-align: left;">Title</th>
+          <th style="padding: 1rem; text-align: left;">Date Uploaded</th>
+        </tr>
+        <tr *ngIf="type() === 'candidates'">
+          <th style="padding: 1rem; text-align: left;">Name</th>
+          <th style="padding: 1rem; text-align: left;">Match Score</th>
+          <th style="padding: 1rem; text-align: left;">Email</th>
+          <th style="padding: 1rem; text-align: left;">Phone</th>
+          <th style="padding: 1rem; text-align: left;">Date Added</th>
+        </tr>
+        <tr *ngIf="type() === 'interviews'">
+          <th style="padding: 1rem; text-align: left;">Candidate Name</th>
+          <th style="padding: 1rem; text-align: left;">Job Title</th>
+          <th style="padding: 1rem; text-align: left;">Status</th>
+          <th style="padding: 1rem; text-align: left;">Date Sent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of data()" style="border-bottom: 1px solid var(--border);">
+          <ng-container *ngIf="type() === 'jds'">
+            <td style="padding: 1rem;">{{ row.title }}</td>
+            <td style="padding: 1rem;">{{ formatDate(row.created_at) }}</td>
+          </ng-container>
+          <ng-container *ngIf="type() === 'candidates'">
+            <td style="padding: 1rem;">{{ row.name }}</td>
+            <td style="padding: 1rem; font-weight: 500;">
+              <span *ngIf="row.overall_score !== undefined">{{ formatScore(row.overall_score) }}%</span>
+              <span *ngIf="row.overall_score === undefined" style="color: var(--text-muted)">N/A</span>
+            </td>
+            <td style="padding: 1rem;">{{ row.email }}</td>
+            <td style="padding: 1rem;">{{ row.phone || 'N/A' }}</td>
+            <td style="padding: 1rem;">{{ formatDate(row.created_at) }}</td>
+          </ng-container>
+          <ng-container *ngIf="type() === 'interviews'">
+            <td style="padding: 1rem;">{{ row.candidate_name }}</td>
+            <td style="padding: 1rem;">{{ row.jd_title }}</td>
+            <td style="padding: 1rem;">{{ row.status | uppercase }}</td>
+            <td style="padding: 1rem;">{{ formatDate(row.sent_at) }}</td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

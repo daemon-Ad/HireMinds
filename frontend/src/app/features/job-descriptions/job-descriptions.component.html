@@ -4,10 +4,18 @@
       <h1>Job Descriptions</h1>
       <p class="page-subtitle">Upload and manage your AI-parsed job descriptions</p>
     </div>
-    <button class="btn btn-primary" (click)="showUploadPanel.set(!showUploadPanel())">
-      <span class="material-symbols-rounded">{{ showUploadPanel() ? 'close' : 'add' }}</span>
-      {{ showUploadPanel() ? 'Cancel' : 'Upload JD' }}
-    </button>
+    
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <div class="modern-input-wrapper" style="width: 250px;">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" class="form-control" placeholder="Search JDs by keyword..." />
+      </div>
+      
+      <button class="btn btn-primary" (click)="showUploadPanel.set(!showUploadPanel())">
+        <span class="material-symbols-rounded">{{ showUploadPanel() ? 'close' : 'add' }}</span>
+        {{ showUploadPanel() ? 'Cancel' : 'Upload JD' }}
+      </button>
+    </div>
   </div>
 
   <!-- Success / Error banners -->
@@ -77,9 +85,9 @@
       <button class="btn btn-primary" (click)="showUploadPanel.set(true)">Upload JD</button>
     </div>
 
-    <div class="jd-grid" *ngIf="jds().length > 0">
+    <div class="jd-grid" *ngIf="displayJDs().length > 0">
       <a
-        *ngFor="let jd of jds()"
+        *ngFor="let jd of displayJDs()"
         [routerLink]="['/candidates', jd.jd_id]"
         class="jd-card card"
       >
@@ -102,6 +110,10 @@
           <span class="jd-card__cta">View Candidates →</span>
         </div>
       </a>
+    </div>
+    
+    <div style="text-align: center; padding: 2rem;" *ngIf="displayJDs().length > 0">
+      <a routerLink="/archive/jds" style="color: var(--text-muted); text-decoration: underline; font-size: 0.9rem; cursor: pointer;">View full archived data</a>
     </div>
   </div>
 

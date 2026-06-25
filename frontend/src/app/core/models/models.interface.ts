@@ -51,6 +51,10 @@ export interface JDCreateRequest {
   raw_text: string;
 }
 
+export interface JDUpdateRequest {
+  title?: string;
+}
+
 export interface Candidate {
   candidate_id: string;
   raw_cv_text: string;
@@ -77,6 +81,7 @@ export interface CandidateMatch {
   skills?: string | null;          // JSON string
   experience_json?: string | null; // JSON string
   education_json?: string | null;  // JSON string
+  raw_cv_text?: string | null;
   created_at: string;
   // Scores are 0–1 fractions from backend — multiply by 100 for display
   overall_score: number;

@@ -44,17 +44,33 @@ def upload_candidate(
     )
 
 
-@router.get("/", response_model=List[CandidateResponse])
+@router.get("/", response_model=List[CandidateWithScoreResponse])
 def list_candidates(
     db: Session = Depends(get_db),
     current_recruiter: Recruiter = Depends(get_current_recruiter),
 ):
     """
     List all candidates that have been matched against this recruiter's JDs.
-    Deduplicates candidates who matched multiple JDs.
+    Deduplicates candidates who matched multiple JDs, showing the score for the first matched JD.
     """
     return candidate_service.list_candidates(
         db=db,
+        recruiter_id=current_recruiter.recruiter_id,
+    )
+
+
+@router.get("/profile/{candidate_id}", response_model=CandidateResponse)
+def get_candidate_profile(
+    candidate_id: UUID,
+    db: Session = Depends(get_db),
+    current_recruiter: Recruiter = Depends(get_current_recruiter),
+):
+    """
+    Get full profile details for a candidate.
+    """
+    return candidate_service.get_candidate_profile(
+        db=db,
+        candidate_id=candidate_id,
         recruiter_id=current_recruiter.recruiter_id,
     )
 

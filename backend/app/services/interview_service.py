@@ -195,10 +195,8 @@ def update_interview(
     if action == "cancel":
         new_status = "cancelled"
     else:
-        if interview.status.value == "postponed":
-            new_status = "sent"
-        else:
-            new_status = "postponed"
+        # For postpone, just keep the current status (or set to "sent" if it's new slots)
+        new_status = interview.status.value if hasattr(interview.status, 'value') else interview.status
 
     interview = interview_repo.create_or_update(
         db=db,
