@@ -28,7 +28,7 @@ allowed_origins = [
     "http://localhost:4200"
 ]
 if frontend_url:
-    allowed_origins.append(frontend_url)
+    allowed_origins.append(frontend_url.rstrip("/"))
 
 # ── CORS (React frontend) ──────────────────────────────────────────────────────
 app.add_middleware(
