@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,21 +6,21 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import create_all_tables
 from app.routers import auth, job_descriptions, candidates, matches, interviews
 
+is_production = os.getenv("FRONTEND_URL") is not None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     create_all_tables()
     yield
 
-
 app = FastAPI(
     title="Multi-Agent AI Recruitment Platform",
     description="AI-powered recruitment pipeline: JD parsing, CV matching, and interview scheduling.",
     version="1.0.0",
     lifespan=lifespan,
+    docs_url=None if is_production else "/docs",
+    redoc_url=None if is_production else "/redoc",
 )
-
-import os
 
 frontend_url = os.getenv("FRONTEND_URL")
 allowed_origins = [
