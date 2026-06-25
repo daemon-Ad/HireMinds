@@ -1,0 +1,72 @@
+<div class="about-page">
+  <!-- Nav -->
+  <nav class="about-nav">
+    <div class="about-nav__logo">
+      <span>⚡</span> RecruitAI
+    </div>
+    <div class="about-nav__links">
+      <a href="https://github.com" target="_blank" class="btn btn-ghost">
+        <span class="material-symbols-rounded">code</span> GitHub
+      </a>
+      <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary">Dashboard →</a>
+      <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary">Get Started →</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <canvas #networkCanvas class="hero__bg"></canvas>
+    <div class="hero__content page-enter">
+      <div class="hero__badge">
+        <span class="material-symbols-rounded">auto_awesome</span>
+        Powered by Groq LLM
+      </div>
+      <h1 class="hero__title">AI-Powered Recruitment,<br>Done Right.</h1>
+      <p class="hero__subtitle">
+        Upload job descriptions, let AI parse them, match candidate CVs with intelligent scoring,
+        and automatically schedule interviews — all in one platform.
+      </p>
+      <div class="hero__cta">
+        <a routerLink="/login" *ngIf="!auth.isLoggedIn()" class="btn btn-primary btn-lg">Start Recruiting Free</a>
+        <a routerLink="/jd" *ngIf="auth.isLoggedIn()" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        <a href="http://localhost:8000/docs" target="_blank" class="btn btn-ghost btn-lg">API Docs →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section class="how-it-works">
+    <div class="section-label">How it Works</div>
+    <h2>Four steps to your next hire</h2>
+    <div class="steps-grid">
+      <div class="step-card" *ngFor="let step of steps; let i = index">
+        <div class="step-card__number">{{ i + 1 }}</div>
+        <div class="step-card__icon">
+          <span class="material-symbols-rounded">{{ step.icon }}</span>
+        </div>
+        <h3>{{ step.title }}</h3>
+        <p>{{ step.desc }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="tech-stack">
+    <div class="section-label">Tech Stack</div>
+    <h2>Built with modern tools</h2>
+    <div class="tech-grid">
+      <div class="tech-pill" *ngFor="let tech of techStack" [style.border-color]="tech.color + '33'">
+        <span class="tech-dot" [style.background]="tech.color"></span>
+        {{ tech.name }}
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="about-footer">
+    <span>Multi-Agent AI Recruitment Platform</span>
+    <a href="https://github.com" target="_blank" class="btn btn-ghost">
+      <span class="material-symbols-rounded">code</span> View on GitHub
+    </a>
+  </footer>
+</div>

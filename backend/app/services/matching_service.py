@@ -3,6 +3,7 @@ from typing import List
 from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
+from datetime import datetime, timezone, timedelta
 
 from app.config import settings
 from app.schemas.match import MatchResponse, ShortlistResponse
@@ -10,6 +11,9 @@ from app.db.repositories import candidate_repo, jd_repo, match_repo
 from app.agents.matching_engine import MatchingEngineAgent
 from app.agents.jd_summarizer import ParsedJD
 from app.agents.cv_parser import ParsedCandidate
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def _orm_to_parsed_candidate(candidate) -> ParsedCandidate:
@@ -102,6 +106,21 @@ def run_match(db: Session, candidate_id: UUID, jd_id: UUID) -> MatchResponse:
         overall_score=result.overall_score,
         is_shortlisted=result.is_shortlisted,
     )
+
+    if result.is_shortlisted:
+        from app.services.interview_service import send_interviews
+        try:
+            proposed_time = datetime.now(timezone.utc) + timedelta(days=7)
+            proposed_slot_str = proposed_time.strftime("%Y-%m-%d %H:%M")
+            send_interviews(
+                db=db,
+                jd_id=jd_id,
+                proposed_slots=[proposed_slot_str],
+                recruiter_id=jd.recruiter_id,
+                candidate_id=candidate_id
+            )
+        except Exception as e:
+            logger.error(f"Failed to auto-schedule interview for candidate {candidate_id}: {e}")
 
     return MatchResponse.model_validate(match)
 

@@ -1,0 +1,173 @@
+<div class="interviews-page page-enter">
+  <div class="page-header">
+    <div>
+      <h1>Interviews</h1>
+      <p class="page-subtitle">Manage all your interview invitations</p>
+    </div>
+  </div>
+
+  <!-- Banner -->
+  <div class="banner banner--success" *ngIf="success()">
+    <span class="material-symbols-rounded">check_circle</span>
+    {{ success() }}
+  </div>
+  <div class="banner banner--error" *ngIf="error()">
+    <span class="material-symbols-rounded">error</span>
+    {{ error() }}
+  </div>
+
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab() === 'active'" (click)="activeTab.set('active')">
+      <span class="material-symbols-rounded">schedule</span>
+      Active
+      <span class="tab__badge" *ngIf="activeInterviews().length">{{ activeInterviews().length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'past'" (click)="activeTab.set('past')">
+      <span class="material-symbols-rounded">history</span>
+      Past Interviews
+      <span class="tab__badge" *ngIf="pastInterviews().length">{{ pastInterviews().length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'postponed'" (click)="activeTab.set('postponed')">
+      <span class="material-symbols-rounded">update</span>
+      Postponed
+      <span class="tab__badge" *ngIf="postponedInterviews().length">{{ postponedInterviews().length }}</span>
+    </button>
+    <button class="tab" [class.active]="activeTab() === 'cancelled'" (click)="activeTab.set('cancelled')">
+      <span class="material-symbols-rounded">cancel</span>
+      Cancelled
+      <span class="tab__badge" *ngIf="cancelledInterviews().length">{{ cancelledInterviews().length }}</span>
+    </button>
+  </div>
+
+  <div *ngIf="!loading(); else skeleton">
+    <div class="empty-state" *ngIf="displayInterviews().length === 0">
+      <span class="material-symbols-rounded">event_busy</span>
+      <p>No interviews found in this section.</p>
+    </div>
+
+    <div class="table-container" *ngIf="displayInterviews().length > 0">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Candidate Name</th>
+            <th>Job Title</th>
+            <th>Status</th>
+            <th>Date Sent</th>
+            <th>Proposed Slots</th>
+            <th *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let interview of displayInterviews()">
+            <td class="font-medium text-primary">{{ interview.candidate_name }}</td>
+            <td>{{ interview.jd_title }}</td>
+            <td>
+              <span class="pill" [class]="'pill-' + getStatusClass(interview.status)">
+                {{ interview.status | uppercase }}
+              </span>
+            </td>
+            <td class="text-muted">{{ formatDate(interview.sent_at) }}</td>
+            <td>
+              <div class="slots-list">
+                <span class="pill pill-muted" *ngFor="let slot of getParsedSlots(interview.proposed_slots)">
+                  {{ slot }}
+                </span>
+              </div>
+            </td>
+            <td *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">
+              <div class="action-buttons" *ngIf="activeTab() === 'active'">
+                <button class="btn btn-outline-primary btn-sm" (click)="openModal(interview, 'postpone')">
+                  Postpone
+                </button>
+                <button class="btn btn-outline-danger btn-sm" (click)="openModal(interview, 'cancel')">
+                  Cancel
+                </button>
+              </div>
+              <div class="action-buttons" *ngIf="activeTab() === 'postponed'">
+                <button class="btn btn-outline-primary btn-sm" (click)="openModal(interview, 'postpone')">
+                  Schedule
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <ng-template #skeleton>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Candidate Name</th>
+            <th>Job Title</th>
+            <th>Status</th>
+            <th>Date Sent</th>
+            <th>Proposed Slots</th>
+            <th *ngIf="activeTab() === 'active' || activeTab() === 'postponed'">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of [1,2,3]">
+            <td><div class="skeleton-text" style="width: 100px;"></div></td>
+            <td><div class="skeleton-text" style="width: 120px;"></div></td>
+            <td><div class="skeleton-text" style="width: 80px;"></div></td>
+            <td><div class="skeleton-text" style="width: 100px;"></div></td>
+            <td><div class="skeleton-text" style="width: 150px;"></div></td>
+            <td *ngIf="activeTab() === 'active' || activeTab() === 'postponed'"><div class="skeleton-text" style="width: 120px;"></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Update Modal -->
+  <div class="modal-backdrop" *ngIf="showModal()" (click)="closeModal()">
+    <div class="modal-panel right-panel" (click)="$event.stopPropagation()">
+      <div class="modal-panel__header">
+        <h3 class="capitalize">{{ modalAction() }} Interview</h3>
+        <button class="btn btn-icon" (click)="closeModal()">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      
+      <div class="modal-panel__body">
+        <p class="text-muted mb-4">
+          Are you sure you want to {{ modalAction() }} the interview for <strong class="text-primary">{{ selectedInterview()?.candidate_name }}</strong> for the <strong>{{ selectedInterview()?.jd_title }}</strong> role?
+        </p>
+
+        <div *ngIf="modalAction() === 'postpone'">
+          <p class="form-label">Provide new proposed slots:</p>
+          <div class="slot-inputs">
+            <div class="slot-row" *ngFor="let slot of slots; let i = index">
+              <div class="modern-input-wrapper">
+                <span class="material-symbols-rounded">event</span>
+                <input type="text" appDatetimePicker [(ngModel)]="slot.datetime" class="form-control" placeholder="Select Date & Time..." />
+              </div>
+              <button class="btn btn-icon text-danger ml-2" (click)="slots.splice(i, 1)" *ngIf="slots.length > 1">
+                <span class="material-symbols-rounded">delete</span>
+              </button>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm mt-2" (click)="slots.push({datetime: ''})">
+            + Add another slot
+          </button>
+        </div>
+      </div>
+      
+      <div class="modal-panel__footer">
+        <button class="btn btn-ghost" (click)="closeModal()">Close</button>
+        <button 
+          class="btn" 
+          [class.btn-danger]="modalAction() === 'cancel'"
+          [class.btn-primary]="modalAction() === 'postpone'"
+          (click)="submitUpdate()" 
+          [disabled]="updating()"
+        >
+          {{ updating() ? 'Updating...' : 'Confirm ' + modalAction() }}
+        </button>
+      </div>
+    </div>
+  </div>

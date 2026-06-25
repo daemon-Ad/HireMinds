@@ -2,7 +2,10 @@ import logging
 from dataclasses import dataclass
 from typing import List
 
-from app.agents.prompts import INTERVIEW_SCHEDULER_SYSTEM, INTERVIEW_SCHEDULER_USER
+from app.agents.prompts import (
+    INTERVIEW_SCHEDULER_SYSTEM, INTERVIEW_SCHEDULER_USER,
+    INTERVIEW_UPDATE_SYSTEM, INTERVIEW_UPDATE_USER
+)
 from app.utils.json_validator import parse_llm_response
 
 logger = logging.getLogger(__name__)
@@ -92,6 +95,58 @@ class InterviewSchedulerAgent:
                 f"Please confirm your availability at your earliest convenience.\n\n"
                 f"Best regards,\n{recruiter_name}"
             ),
+            proposed_slots = proposed_slots,
+        )
+
+    def update_interview(
+        self,
+        candidate_name:  str,
+        jd_title:        str,
+        recruiter_name:  str,
+        action:          str,
+        proposed_slots:  List[str],
+    ) -> InterviewEmail:
+        slots_text = (
+            "\n".join(f"- {s}" for s in proposed_slots)
+            if proposed_slots
+            else "None"
+        )
+
+        prompt = INTERVIEW_UPDATE_USER.format(
+            candidate_name  = candidate_name,
+            jd_title        = jd_title,
+            recruiter_name  = recruiter_name,
+            action          = action,
+            proposed_slots  = slots_text,
+        )
+
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                raw_response = self._call_llm(
+                    system = INTERVIEW_UPDATE_SYSTEM,
+                    user   = prompt,
+                )
+            except Exception as exc:
+                logger.warning(
+                    "InterviewSchedulerAgent: update LLM call attempt %d/%d failed — %s",
+                    attempt, MAX_RETRIES, exc,
+                )
+                continue
+
+            data = parse_llm_response(raw_response)
+            if data is None:
+                continue
+
+            return InterviewEmail(
+                email_subject  = data.get("email_subject", f"Interview Update — {jd_title}"),
+                email_body     = data.get("email_body", ""),
+                proposed_slots = proposed_slots,
+            )
+
+        logger.error("InterviewSchedulerAgent: update all %d attempts exhausted, returning fallback.", MAX_RETRIES)
+        return InterviewEmail(
+            email_subject  = f"Interview Update — {jd_title}",
+            email_body     = f"Dear {candidate_name},\n\nThis email is to {action} your interview for the {jd_title} role.\n\nBest regards,\n{recruiter_name}",
             proposed_slots = proposed_slots,
         )
 

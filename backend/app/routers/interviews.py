@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.schemas.interview import InterviewTriggerRequest, InterviewResponse
+from app.schemas.interview import InterviewTriggerRequest, InterviewUpdateRequest, InterviewResponse
 from app.services import interview_service
 from app.db.database import get_db
 from app.dependencies import get_current_recruiter
@@ -31,6 +31,7 @@ def send_interviews(
         jd_id=request.jd_id,
         proposed_slots=request.proposed_slots,
         recruiter_id=current_recruiter.recruiter_id,
+        candidate_id=request.candidate_id,
     )
 
 
@@ -46,4 +47,24 @@ def list_interviews(
     return interview_service.list_interviews(
         db=db,
         recruiter_id=current_recruiter.recruiter_id,
+    )
+
+@router.put("/{interview_id}", response_model=InterviewResponse)
+def update_interview(
+    interview_id: str,
+    request: InterviewUpdateRequest,
+    db: Session = Depends(get_db),
+    current_recruiter: Recruiter = Depends(get_current_recruiter),
+):
+    """
+    Cancel or postpone an interview.
+    Generates a new email via LLM and updates the DB.
+    """
+    import uuid
+    return interview_service.update_interview(
+        db=db,
+        interview_id=uuid.UUID(interview_id),
+        recruiter_id=current_recruiter.recruiter_id,
+        action=request.action,
+        new_slots=request.new_slots,
     )

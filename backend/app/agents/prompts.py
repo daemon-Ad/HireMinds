@@ -55,18 +55,29 @@ CV Text:
 {raw_cv_text}
 """
 
-# ── Matching Engine (keyword scoring only) ─────────────────────────────────────
-
-MATCHING_KEYWORD_SYSTEM = """\
-You are a recruitment AI. Evaluate keyword alignment between a candidate profile
-and a job description. Respond with valid JSON only — no prose, no markdown fences.
+MATCHING_ENGINE_SYSTEM = """\
+You are an expert HR recruitment AI. Evaluate the alignment between a candidate profile and a job description.
+You must respond with valid JSON only — no prose, no markdown fences.
 """
 
-MATCHING_KEYWORD_USER = """\
-Given the candidate profile and job description below, return a JSON object with:
-- keyword_score : float between 0.0 and 1.0 — how well the candidate's overall
-                  language, domain terms, and industry keywords match the JD.
-- matched_keywords : list of strings — key terms found in both.
+MATCHING_ENGINE_USER = """\
+Evaluate the candidate profile against the job description below.
+Calculate scores between 0.0 and 1.0 for the following categories:
+- skill_score: Alignment of candidate skills with required skills.
+- experience_score: Does candidate meet or exceed min experience?
+- education_score: Does candidate meet required education?
+- keyword_score: Semantic alignment of keywords.
+- overall_score: Weighted average. Priority: Skills (40%), Experience (30%), Education (10%), Keywords (20%).
+
+Return a JSON object exactly like this:
+{{
+  "skill_score": 0.8,
+  "experience_score": 0.9,
+  "education_score": 1.0,
+  "keyword_score": 0.75,
+  "overall_score": 0.83,
+  "reasoning": "A short summary of why this score was given."
+}}
 
 Candidate Profile:
 {candidate_profile}
@@ -74,6 +85,8 @@ Candidate Profile:
 Job Description:
 {jd_profile}
 """
+
+
 
 # ── Interview Scheduler ────────────────────────────────────────────────────────
 
@@ -88,10 +101,36 @@ Write a personalised interview invitation email for the candidate below.
 Candidate Name  : {candidate_name}
 Job Title       : {jd_title}
 Recruiter Name  : {recruiter_name}
-Proposed Slots  : {proposed_slots}
+Proposed Slots  : {proposed_slots}(if only one slot then do not ask to choose, just say your insterview is schedules at slot)
+
+Please ensure you tell candidates to be present at or before 09:30 AM on that day, in the given location (be it online or offline).
 
 Return a JSON object with exactly these fields:
 - email_subject : string — a concise, professional email subject line
-- email_body    : string — the full email body (plain text, polite and professional)
+- email_body    : string — the full email body (plain text, professional. Use \n for newlines, DO NOT use literal newlines inside the JSON string)
 - proposed_slots: list of strings — echo back the proposed time slots as offered
+"""
+
+# ── Interview Updater ──────────────────────────────────────────────────────────
+
+INTERVIEW_UPDATE_SYSTEM = """\
+You are a professional recruiter. Write an email to update a candidate about their interview schedule.
+Respond with valid JSON only — no prose, no markdown fences.
+"""
+
+INTERVIEW_UPDATE_USER = """\
+Write a professional email to {action} the interview for the candidate below.
+
+Candidate Name  : {candidate_name}
+Job Title       : {jd_title}
+Recruiter Name  : {recruiter_name}
+Action          : {action} (e.g., cancel, postpone)
+New Slots       : {proposed_slots} (if postponing, otherwise empty, if only one slot do not sak to choose, just say your interview is scheduled at this slot)
+
+If cancelling, be polite and concise. If postponing, apologize for the inconvenience and offer the new slots.
+Please ensure you tell candidates to be present at or before 09:30 AM on that day, in the given location (be it online or offline).
+
+Return a JSON object with exactly these fields:
+- email_subject : string — a concise, professional email subject line
+- email_body    : string — the full email body (plain text, professional. Use \n for newlines, DO NOT use literal newlines inside the JSON string)
 """

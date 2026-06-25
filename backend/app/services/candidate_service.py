@@ -37,13 +37,8 @@ def create_candidate(
             detail="Could not extract a valid email address from the CV.",
         )
 
-    # Guard: avoid duplicate candidates by email
-    existing = candidate_repo.get_by_email(db=db, email=parsed.email)
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"A candidate with email '{parsed.email}' already exists.",
-        )
+    # We no longer enforce email uniqueness, allowing a candidate
+    # to be uploaded multiple times for different roles or with updated CVs.
 
     candidate = candidate_repo.create(
         db=db,

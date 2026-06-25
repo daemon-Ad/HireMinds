@@ -1,0 +1,129 @@
+<div class="dashboard page-enter">
+  <div class="page-header">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="page-subtitle">Your recruitment pipeline overview</p>
+    </div>
+    <a routerLink="/jd" class="btn btn-primary">
+      <span class="material-symbols-rounded">add</span>
+      New Job Description
+    </a>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid" *ngIf="!loading(); else skeletonStats">
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--blue">
+        <span class="material-symbols-rounded">description</span>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ totalJDs }}</span>
+        <span class="stat-card__label">Job Descriptions</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--green">
+        <span class="material-symbols-rounded">group</span>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ totalShortlisted }}</span>
+        <span class="stat-card__label">Shortlisted</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--purple">
+        <span class="material-symbols-rounded">calendar_month</span>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ interviewsSent }}</span>
+        <span class="stat-card__label">Interviews Sent</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--amber">
+        <span class="material-symbols-rounded">bolt</span>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">AI</span>
+        <span class="stat-card__label">Powered by Groq</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skeleton loader -->
+  <ng-template #skeletonStats>
+    <div class="stats-grid">
+      <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  </ng-template>
+
+  <!-- Split Content -->
+  <div class="dashboard-split">
+    <!-- Recent JDs -->
+    <div class="section">
+      <div class="section__header">
+        <h2>Recent Job Descriptions</h2>
+        <a routerLink="/jd" class="section__link">View all →</a>
+      </div>
+
+      <div *ngIf="!loading()">
+        <div *ngIf="recentJDs.length === 0" class="empty-state">
+          <span class="material-symbols-rounded">description</span>
+          <p>No job descriptions yet.</p>
+        </div>
+
+        <div class="jd-list" *ngIf="recentJDs.length > 0">
+          <a
+            *ngFor="let jd of recentJDs"
+            [routerLink]="['/candidates', jd.jd_id]"
+            class="jd-row"
+          >
+            <div class="jd-row__icon">
+              <span class="material-symbols-rounded">work</span>
+            </div>
+            <div class="jd-row__info">
+              <span class="jd-row__title">{{ jd.title }}</span>
+              <span class="jd-row__date">{{ formatDate(jd.created_at) }}</span>
+            </div>
+            <span class="material-symbols-rounded jd-row__arrow">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Interviews -->
+    <div class="section">
+      <div class="section__header">
+        <h2>Upcoming Interviews</h2>
+        <a routerLink="/interviews" class="section__link">View all →</a>
+      </div>
+
+      <div *ngIf="!loading()">
+        <div *ngIf="recentInterviews.length === 0" class="empty-state">
+          <span class="material-symbols-rounded">calendar_month</span>
+          <p>No upcoming interviews.</p>
+        </div>
+
+        <div class="jd-list" *ngIf="recentInterviews.length > 0">
+          <a
+            *ngFor="let interview of recentInterviews"
+            routerLink="/interviews"
+            class="jd-row"
+          >
+            <div class="jd-row__icon" style="color: var(--primary); background: var(--primary-subtle);">
+              <span class="material-symbols-rounded">calendar_today</span>
+            </div>
+            <div class="jd-row__info">
+              <span class="jd-row__title">{{ interview.candidate_name || 'Unknown Candidate' }}</span>
+              <span class="jd-row__date">{{ interview.status }}</span>
+            </div>
+            <span class="material-symbols-rounded jd-row__arrow">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,113 @@
+<div class="jd-page page-enter">
+  <div class="page-header">
+    <div>
+      <h1>Job Descriptions</h1>
+      <p class="page-subtitle">Upload and manage your AI-parsed job descriptions</p>
+    </div>
+    <button class="btn btn-primary" (click)="showUploadPanel.set(!showUploadPanel())">
+      <span class="material-symbols-rounded">{{ showUploadPanel() ? 'close' : 'add' }}</span>
+      {{ showUploadPanel() ? 'Cancel' : 'Upload JD' }}
+    </button>
+  </div>
+
+  <!-- Success / Error banners -->
+  <div class="banner banner--success" *ngIf="success()">
+    <span class="material-symbols-rounded">check_circle</span> {{ success() }}
+  </div>
+  <div class="banner banner--error" *ngIf="error()">
+    <span class="material-symbols-rounded">error</span> {{ error() }}
+  </div>
+
+  <!-- Upload Panel -->
+  <div class="upload-panel" *ngIf="showUploadPanel()">
+    <h3 class="upload-panel__title">New Job Description</h3>
+
+    <div class="form-field">
+      <label for="jd-title">Job Title *</label>
+      <input id="jd-title" type="text" [(ngModel)]="uploadTitle" placeholder="e.g. Senior Backend Engineer" />
+    </div>
+
+    <!-- Drag & Drop Zone -->
+    <div
+      class="drop-zone"
+      [class.active]="dragOver"
+      [class.has-file]="uploadFile"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()"
+    >
+      <input #fileInput type="file" accept=".pdf" (change)="onFileSelect($event)" hidden />
+      <span class="material-symbols-rounded drop-zone__icon">upload_file</span>
+      <p *ngIf="!uploadFile">Drag & drop a PDF or <span class="link">browse</span></p>
+      <p *ngIf="uploadFile" class="drop-zone__filename">
+        <span class="material-symbols-rounded">picture_as_pdf</span> {{ uploadFile.name }}
+      </p>
+    </div>
+
+    <div class="upload-divider">
+      <span>or paste raw text</span>
+    </div>
+
+    <div class="form-field">
+      <label for="jd-text">Job Description Text</label>
+      <textarea
+        id="jd-text"
+        [(ngModel)]="uploadText"
+        placeholder="Paste the full job description here..."
+        rows="6"
+        [disabled]="!!uploadFile"
+      ></textarea>
+    </div>
+
+    <div class="upload-panel__actions">
+      <button class="btn btn-ghost" (click)="resetForm()">Cancel</button>
+      <button class="btn btn-primary" (click)="onSubmit()" [disabled]="uploading()">
+        <span class="material-symbols-rounded" *ngIf="!uploading()">auto_awesome</span>
+        {{ uploading() ? 'Parsing with AI…' : 'Upload & Parse' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- JD Grid -->
+  <div *ngIf="!loading(); else skeletonGrid">
+    <div class="empty-state" *ngIf="jds().length === 0 && !showUploadPanel()">
+      <span class="material-symbols-rounded">description</span>
+      <p>No job descriptions yet. Upload your first one!</p>
+      <button class="btn btn-primary" (click)="showUploadPanel.set(true)">Upload JD</button>
+    </div>
+
+    <div class="jd-grid" *ngIf="jds().length > 0">
+      <a
+        *ngFor="let jd of jds()"
+        [routerLink]="['/candidates', jd.jd_id]"
+        class="jd-card card"
+      >
+        <div class="jd-card__header">
+          <div class="jd-card__icon">
+            <span class="material-symbols-rounded">work</span>
+          </div>
+          <span class="jd-card__date">{{ formatDate(jd.created_at) }}</span>
+        </div>
+        <h3 class="jd-card__title">{{ jd.title }}</h3>
+        <div class="jd-card__skills" *ngIf="getSkills(jd).length">
+          <span class="pill pill-muted" *ngFor="let skill of getSkills(jd).slice(0, 4)">
+            {{ skill }}
+          </span>
+          <span class="pill pill-muted" *ngIf="getSkills(jd).length > 4">
+            +{{ getSkills(jd).length - 4 }} more
+          </span>
+        </div>
+        <div class="jd-card__footer">
+          <span class="jd-card__cta">View Candidates →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <ng-template #skeletonGrid>
+    <div class="jd-grid">
+      <div class="jd-card card skeleton-card" *ngFor="let i of [1,2,3]"></div>
+    </div>
+  </ng-template>
+</div>
