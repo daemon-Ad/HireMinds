@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="frontend/src/assets/logo.png" alt="HireMinds Logo" width="120" />
+  <img src="frontend/public/assets/logo.png" alt="HireMinds Logo" width="120" />
   <h1>HireMinds: Multi-Agent AI Recruitment Platform</h1>
   <p><strong>Intelligent, autonomous recruitment powered by Large Language Models.</strong></p>
 
-  <a href="https://hireminds.pages.dev">
-    <img src="https://img.shields.io/badge/Live_Website-hireminds.pages.dev-00E5FF?style=for-the-badge&logo=cloudflare" alt="Live Website" />
+  <a href="https://multi-agent-ai-recruitment-platform.pages.dev">
+    <img src="https://img.shields.io/badge/Live_Website-hireminds-00E5FF?style=for-the-badge&logo=cloudflare" alt="Live Website" />
   </a>
   <a href="https://github.com/daemon-Ad/Multi-Agent-AI-Recruitment-Platform">
     <img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repo" />
@@ -23,7 +23,7 @@
 
 The **Multi-Agent AI Recruitment Platform** entirely streamlines the hiring process by intelligently parsing Job Descriptions and Candidate CVs, computing comprehensive Match Scores, and fully automating personalized interview scheduling using state-of-the-art Large Language Models (LLMs).
 
-**Visit the live platform:** [https://hireminds.pages.dev](https://hireminds.pages.dev)
+**Visit the live platform:** [https://multi-agent-ai-recruitment-platform.pages.dev/](https://multi-agent-ai-recruitment-platform.pages.dev/)
 
 ---
 
