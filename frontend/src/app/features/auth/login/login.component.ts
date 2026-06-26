@@ -29,7 +29,8 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   
   private ctx!: CanvasRenderingContext2D;
   private animationFrameId: number = 0;
-  private points: {x: number, y: number, life: number}[] = [];
+  private particles: {x: number, y: number, vx: number, vy: number, radius: number}[] = [];
+  private mouse = { x: -1000, y: -1000 };
 
   constructor(private auth: AuthService, private router: Router) {
     if (this.auth.isLoggedIn()) {
@@ -65,11 +66,14 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   onMouseMove(event: MouseEvent) {
     if (!this.canvasRef) return;
     const rect = this.canvasRef.nativeElement.getBoundingClientRect();
-    this.points.push({
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-      life: 1.0
-    });
+    this.mouse.x = event.clientX - rect.left;
+    this.mouse.y = event.clientY - rect.top;
+  }
+
+  @HostListener('mouseleave')
+  onMouseLeave() {
+    this.mouse.x = -1000;
+    this.mouse.y = -1000;
   }
 
   private initCanvas() {
@@ -77,6 +81,18 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
     canvas.height = canvas.parentElement?.clientHeight || window.innerHeight;
     this.ctx = canvas.getContext('2d')!;
+
+    this.particles = [];
+    const numParticles = Math.floor((canvas.width * canvas.height) / 12000);
+    for (let i = 0; i < numParticles; i++) {
+      this.particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 1.5,
+        vy: (Math.random() - 0.5) * 1.5,
+        radius: Math.random() * 2 + 1
+      });
+    }
   }
 
   private animate = () => {
@@ -84,24 +100,51 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (this.points.length === 0) return;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.points[0].x, this.points[0].y);
-    for (let i = 1; i < this.points.length; i++) {
-      this.ctx.lineTo(this.points[i].x, this.points[i].y);
-    }
+    const maxDistance = 150;
     
-    this.ctx.strokeStyle = '#00aa00';
-    this.ctx.lineWidth = 4;
-    this.ctx.lineCap = 'round';
-    this.ctx.lineJoin = 'round';
-    this.ctx.stroke();
-
-    for (let i = 0; i < this.points.length; i++) {
-      this.points[i].life -= 0.02;
-    }
-    this.points = this.points.filter(p => p.life > 0);
+    this.particles.forEach((p, i) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      
+      if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+      
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      this.ctx.fillStyle = 'rgba(0, 255, 0, 0.6)';
+      this.ctx.fill();
+      
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const p2 = this.particles[j];
+        const dx = p.x - p2.x;
+        const dy = p.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < maxDistance) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(p.x, p.y);
+          this.ctx.lineTo(p2.x, p2.y);
+          const opacity = 1 - (dist / maxDistance);
+          this.ctx.strokeStyle = `rgba(0, 255, 0, ${opacity * 0.4})`;
+          this.ctx.lineWidth = 1.5;
+          this.ctx.stroke();
+        }
+      }
+      
+      const mdx = p.x - this.mouse.x;
+      const mdy = p.y - this.mouse.y;
+      const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
+      
+      if (mDist < 200) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(p.x, p.y);
+        this.ctx.lineTo(this.mouse.x, this.mouse.y);
+        const mOpacity = 1 - (mDist / 200);
+        this.ctx.strokeStyle = `rgba(0, 255, 0, ${mOpacity * 0.6})`;
+        this.ctx.lineWidth = 1.5;
+        this.ctx.stroke();
+      }
+    });
   }
 
   onLogin() {
