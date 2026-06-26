@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/src/assets/logo.png" alt="HireMinds Logo" width="120" />
+  <img src="frontend/public/assets/logo.png" alt="HireMinds Logo" width="120" />
   <h1>HireMinds: Multi-Agent AI Recruitment Platform</h1>
   <p><strong>Intelligent, autonomous recruitment powered by Large Language Models.</strong></p>
 
