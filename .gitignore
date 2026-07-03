@@ -102,4 +102,3 @@ yarn-error.log*
 *.txt
 !requirements.txt
 
-backend/tests/
