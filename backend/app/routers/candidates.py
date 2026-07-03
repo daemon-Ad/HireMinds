@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, UploadFile, File, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.schemas.candidate import CandidateResponse, CandidateWithScoreResponse
@@ -17,14 +17,17 @@ router = APIRouter(prefix="/candidates", tags=["candidates"])
 @router.post("/upload", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)
 def upload_candidate(
     file: UploadFile = File(...),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     current_recruiter: Recruiter = Depends(get_current_recruiter),
 ):
     """
     Upload a candidate CV (PDF).
     - Text is extracted from the PDF here in the router.
-    - CVParserAgent parses the text into structured fields.
-    - Matching against all of this recruiter's JDs is triggered automatically.
+    - CVParserAgent parses the text into structured fields (synchronous — result
+      is needed for the 201 response).
+    - Matching against all of this recruiter's JDs is scheduled as a background
+      task so the response returns immediately after parsing.
     Returns 409 if a candidate with the same email already exists.
     Returns 422 if the PDF yields no text or no email can be parsed.
     """
@@ -41,7 +44,9 @@ def upload_candidate(
         db=db,
         raw_cv_text=raw_text,
         recruiter_id=current_recruiter.recruiter_id,
+        background_tasks=background_tasks,
     )
+
 
 
 @router.get("/", response_model=List[CandidateWithScoreResponse])

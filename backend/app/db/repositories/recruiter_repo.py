@@ -17,13 +17,34 @@ def get_by_email(db: Session, email: str) -> Optional[Recruiter]:
     ).first()
 
 
-def create(db: Session, username: str, email: str, password_hash: str) -> Recruiter:
+def create(
+    db: Session,
+    username: str,
+    email: str,
+    password_hash: str,
+    sender_email: Optional[str] = None,
+) -> Recruiter:
     recruiter = Recruiter(
         username=username,
         email=email,
         password_hash=password_hash,
+        sender_email=sender_email,
     )
     db.add(recruiter)
     db.flush()
     db.refresh(recruiter)
     return recruiter
+
+
+def update_sender_email(
+    db: Session,
+    recruiter_id: UUID,
+    sender_email: str,
+) -> Recruiter:
+    """Update the From: address used in interview emails for this recruiter."""
+    recruiter = get_by_id(db=db, recruiter_id=recruiter_id)
+    recruiter.sender_email = sender_email
+    db.flush()
+    db.refresh(recruiter)
+    return recruiter
+

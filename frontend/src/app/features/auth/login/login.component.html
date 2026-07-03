@@ -99,6 +99,19 @@
         />
       </div>
       <div class="form-field">
+        <label for="reg-sender-email">
+          Sender Email
+          <span class="form-field__hint">Candidates receive interview emails from this address</span>
+        </label>
+        <input
+          id="reg-sender-email"
+          type="email"
+          [(ngModel)]="regSenderEmail"
+          name="regSenderEmail"
+          placeholder="hr@yourcompany.com"
+        />
+      </div>
+      <div class="form-field">
         <label for="reg-password">Password</label>
         <input
           id="reg-password"

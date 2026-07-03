@@ -175,6 +175,14 @@
       box-shadow: 0 0 0 3px var(--primary-glow);
     }
   }
+
+  &__hint {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-top: 0.1rem;
+  }
 }
 
 // ── Submit button ────────────────────────────────────────────

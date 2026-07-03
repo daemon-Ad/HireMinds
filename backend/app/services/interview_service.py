@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -8,6 +9,9 @@ from datetime import datetime, timezone, timedelta
 from app.schemas.interview import InterviewResponse
 from app.db.repositories import match_repo, interview_repo, jd_repo
 from app.agents.interview_scheduler import InterviewSchedulerAgent
+from app.utils.email_sender import send_email
+
+logger = logging.getLogger(__name__)
 
 def parse_datetime(dt_str: str) -> datetime:
     try:
@@ -145,6 +149,21 @@ def send_interviews(
         )
         interviews.append(interview)
 
+        # Dispatch the email — logs a warning and skips cleanly if SMTP is not configured
+        # Use recruiter's configured sender address; fall back to their account email
+        recruiter_from = match.recruiter.sender_email or match.recruiter.email
+        dispatched = send_email(
+            to=candidate.email,
+            subject=result.email_subject,
+            body=result.email_body,
+            from_email=recruiter_from,
+        )
+        if dispatched:
+            logger.info(
+                "send_interviews: invitation email dispatched to %s for JD=%s",
+                candidate.email, jd_id,
+            )
+
     return [InterviewResponse.model_validate(i) for i in interviews]
 
 
@@ -208,5 +227,20 @@ def update_interview(
         status=new_status,
         sent_at=datetime.now(timezone.utc),
     )
+
+    # Dispatch the update email (cancel / postpone) to the candidate
+    # Use recruiter's configured sender address; fall back to their account email
+    recruiter_from = match.recruiter.sender_email or match.recruiter.email
+    dispatched = send_email(
+        to=candidate.email,
+        subject=result.email_subject,
+        body=result.email_body,
+        from_email=recruiter_from,
+    )
+    if dispatched:
+        logger.info(
+            "update_interview: %s email dispatched to %s for interview=%s",
+            action, candidate.email, interview_id,
+        )
 
     return InterviewResponse.model_validate(interview)

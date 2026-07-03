@@ -10,6 +10,17 @@ class Settings(BaseSettings):
     GROQ_API_KEY: str = ""
     GROQ_MODEL: str = "llama-3.1-8b-instant"
 
+    # ── SMTP Email ─────────────────────────────────────────────────────────────
+    # Set SMTP_ENABLED=true and fill in credentials to activate email dispatch.
+    # Gmail  : SMTP_HOST=smtp.gmail.com, SMTP_PORT=587, use an App Password.
+    # SendGrid: SMTP_HOST=smtp.sendgrid.net, SMTP_PORT=587,
+    #           SMTP_USERNAME=apikey, SMTP_PASSWORD=<your SendGrid API key>.
+    SMTP_ENABLED: bool = False
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = ""   # sender email / SendGrid literal "apikey"
+    SMTP_PASSWORD: str = ""   # Gmail App Password or SendGrid API key
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

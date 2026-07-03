@@ -1,7 +1,8 @@
+from uuid import UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.schemas.auth import RegisterRequest, TokenResponse
+from app.schemas.auth import RegisterRequest, TokenResponse, RecruiterProfileResponse
 from app.db.repositories import recruiter_repo
 from app.utils import password_hasher, jwt_handler
 
@@ -20,6 +21,7 @@ def register(db: Session, request: RegisterRequest) -> TokenResponse:
         username=request.username,
         email=request.email,
         password_hash=hashed,
+        sender_email=str(request.sender_email) if request.sender_email else None,
     )
 
     access_token = jwt_handler.create_access_token(subject=str(recruiter.recruiter_id))
@@ -42,3 +44,24 @@ def login(db: Session, email: str, password: str) -> TokenResponse:
 
     access_token = jwt_handler.create_access_token(subject=str(recruiter.recruiter_id))
     return TokenResponse(access_token=access_token, token_type="bearer")
+
+
+def get_profile(db: Session, recruiter_id: UUID) -> RecruiterProfileResponse:
+    """Return the authenticated recruiter's profile including sender_email."""
+    recruiter = recruiter_repo.get_by_id(db=db, recruiter_id=recruiter_id)
+    return RecruiterProfileResponse.model_validate(recruiter)
+
+
+def update_sender_email(
+    db: Session,
+    recruiter_id: UUID,
+    sender_email: str,
+) -> RecruiterProfileResponse:
+    """Update the From: address used in interview emails for this recruiter."""
+    recruiter = recruiter_repo.update_sender_email(
+        db=db,
+        recruiter_id=recruiter_id,
+        sender_email=sender_email,
+    )
+    return RecruiterProfileResponse.model_validate(recruiter)
+

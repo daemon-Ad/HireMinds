@@ -4,6 +4,7 @@ export interface Recruiter {
   recruiter_id: string;
   username: string;
   email: string;
+  sender_email?: string | null;
 }
 
 export interface TokenResponse {
@@ -15,11 +16,23 @@ export interface RegisterRequest {
   username: string;
   email: string;
   password: string;
+  sender_email?: string | null;
 }
 
 export interface LoginRequest {
   username: string; // email passed as username per OAuth2 spec
   password: string;
+}
+
+export interface RecruiterProfile {
+  recruiter_id: string;
+  username: string;
+  email: string;
+  sender_email: string | null;
+}
+
+export interface UpdateSenderEmailRequest {
+  sender_email: string;
 }
 
 // Matches backend JDResponse exactly (flat fields, not nested)

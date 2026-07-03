@@ -23,6 +23,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   // Register form
   regUsername = '';
   regEmail = '';
+  regSenderEmail = '';
   regPassword = '';
 
   @ViewChild('networkCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -166,7 +167,12 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     this.loading.set(true);
     this.error.set('');
 
-    this.auth.register({ username: this.regUsername, email: this.regEmail, password: this.regPassword }).subscribe({
+    this.auth.register({
+      username: this.regUsername,
+      email: this.regEmail,
+      password: this.regPassword,
+      sender_email: this.regSenderEmail || undefined,
+    }).subscribe({
       next: () => this.router.navigate(['/dashboard']),
       error: (err) => {
         this.error.set(err.error?.detail || 'Registration failed. Try a different email.');

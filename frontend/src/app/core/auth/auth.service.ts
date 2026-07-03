@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-import { TokenResponse, RegisterRequest } from '../models/models.interface';
+import { TokenResponse, RegisterRequest, RecruiterProfile, UpdateSenderEmailRequest } from '../models/models.interface';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -34,6 +34,15 @@ export class AuthService {
     }).pipe(
       tap(res => this._saveToken(res.access_token))
     );
+  }
+
+  getProfile(): Observable<RecruiterProfile> {
+    return this.http.get<RecruiterProfile>(`${this.API}/auth/me`);
+  }
+
+  updateSenderEmail(senderEmail: string): Observable<RecruiterProfile> {
+    const body: UpdateSenderEmailRequest = { sender_email: senderEmail };
+    return this.http.patch<RecruiterProfile>(`${this.API}/auth/me/sender-email`, body);
   }
 
   logout(): void {

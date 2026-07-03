@@ -38,6 +38,10 @@ interface NavItem {
         </nav>
 
         <div class="sidebar__footer">
+          <a routerLink="/account-settings" routerLinkActive="active" class="sidebar__nav-item" [title]="isSidebarCollapsed() ? 'Account Settings' : ''">
+            <span class="material-symbols-rounded">manage_accounts</span>
+            <span class="sidebar__nav-text" *ngIf="!isSidebarCollapsed()">Account Settings</span>
+          </a>
           <a routerLink="/api-services" routerLinkActive="active" class="sidebar__nav-item" [title]="isSidebarCollapsed() ? 'API Services' : ''">
             <span class="material-symbols-rounded">api</span>
             <span class="sidebar__nav-text" *ngIf="!isSidebarCollapsed()">API Services</span>

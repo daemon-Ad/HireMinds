@@ -1,23 +1,55 @@
 import json
+import logging
 from uuid import UUID
 from typing import List
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
+from fastapi import BackgroundTasks, HTTPException, status
 
 from app.schemas.candidate import CandidateResponse, CandidateWithScoreResponse
 from app.db.repositories import candidate_repo, match_repo
 from app.agents.cv_parser import CVParserAgent
 from app.services import orchestrator
 
+logger = logging.getLogger(__name__)
+
+
+def _run_matching_pipeline_bg(candidate_id: UUID, recruiter_id: UUID) -> None:
+    """
+    Background-safe wrapper for the matching pipeline.
+
+    Opens its own DB session because FastAPI closes the request session before
+    background tasks run — reusing the request session causes 'Session is closed'
+    errors mid-pipeline.
+    """
+    from app.db.database import SessionLocal
+
+    db = SessionLocal()
+    try:
+        orchestrator.run_matching_pipeline(
+            db=db,
+            candidate_id=candidate_id,
+            recruiter_id=recruiter_id,
+        )
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        logger.error(
+            "Background matching pipeline failed for candidate=%s — %s",
+            candidate_id, exc,
+        )
+    finally:
+        db.close()
+
 
 def create_candidate(
     db: Session,
     raw_cv_text: str,
     recruiter_id: UUID,
+    background_tasks: BackgroundTasks = None,
 ) -> CandidateResponse:
     """
-    Parse raw CV text, persist the candidate, and immediately trigger
-    matching against all of this recruiter's JDs via the orchestrator.
+    Parse raw CV text, persist the candidate, and schedule matching as a
+    background task so the HTTP response returns immediately after parsing.
 
     PDF extraction is done upstream in the router before calling here.
     """
@@ -51,14 +83,27 @@ def create_candidate(
         raw_cv_text=raw_cv_text,
     )
 
-    # Trigger matching against all of this recruiter's JDs
-    orchestrator.run_matching_pipeline(
-        db=db,
-        candidate_id=candidate.candidate_id,
-        recruiter_id=recruiter_id,
-    )
+    # Schedule matching in the background — response returns immediately.
+    # If no BackgroundTasks was provided (e.g. called from tests), run inline.
+    if background_tasks is not None:
+        background_tasks.add_task(
+            _run_matching_pipeline_bg,
+            candidate_id=candidate.candidate_id,
+            recruiter_id=recruiter_id,
+        )
+        logger.info(
+            "create_candidate: candidate=%s persisted, matching scheduled as background task",
+            candidate.candidate_id,
+        )
+    else:
+        orchestrator.run_matching_pipeline(
+            db=db,
+            candidate_id=candidate.candidate_id,
+            recruiter_id=recruiter_id,
+        )
 
     return CandidateResponse.model_validate(candidate)
+
 
 
 def list_candidates(db: Session, recruiter_id: UUID) -> List[CandidateWithScoreResponse]:
