@@ -83,6 +83,12 @@ def create_candidate(
         raw_cv_text=raw_cv_text,
     )
 
+    # CRITICAL: commit NOW so the candidate row is visible to the background
+    # task's separate SessionLocal before get_db()'s deferred commit runs.
+    # Without this, the background task races and sees "Candidate not found".
+    db.commit()
+    db.refresh(candidate)
+
     # Schedule matching in the background — response returns immediately.
     # If no BackgroundTasks was provided (e.g. called from tests), run inline.
     if background_tasks is not None:

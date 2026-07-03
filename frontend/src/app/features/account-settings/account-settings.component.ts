@@ -104,16 +104,6 @@ import { RecruiterProfile } from '../../core/models/models.interface';
           {{ errorMsg() }}
         </div>
       </div>
-
-      <!-- SMTP note -->
-      <div class="settings-note">
-        <span class="material-symbols-rounded">info</span>
-        <p>
-          <strong>Note:</strong> This only changes the <code>From:</code> address shown to candidates.
-          Emails are still authenticated and delivered via the platform's SMTP credentials.
-          For best results, use an address from the same domain your SMTP provider has verified.
-        </p>
-      </div>
     </div>
   `,
   styles: [`

@@ -16,8 +16,8 @@ router = APIRouter(prefix="/candidates", tags=["candidates"])
 
 @router.post("/upload", response_model=CandidateResponse, status_code=status.HTTP_201_CREATED)
 def upload_candidate(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    background_tasks: BackgroundTasks = BackgroundTasks(),
     db: Session = Depends(get_db),
     current_recruiter: Recruiter = Depends(get_current_recruiter),
 ):
